@@ -186,6 +186,9 @@
             <button class="side-menu-btn" data-tab="temp-probe-calibration">
                 <i class="fas fa-temperature-high mr-3"></i>Temp Probe Calibration
             </button>
+            <button class="side-menu-btn" data-tab="power-converter">
+                <i class="fas fa-bolt mr-3"></i>Power Converter
+            </button>
         </nav>
     </div>
     
@@ -774,6 +777,123 @@
                     </div>
                 </div>
             </div>
+
+            <!-- Power Converter Section -->
+            <div id="power-converter" class="tool-section hidden">
+                <div class="bg-gray-800 rounded-xl shadow-lg overflow-hidden mb-8">
+                    <div class="gradient-bg p-4 text-white flex justify-between items-center">
+                        <div>
+                            <h2 class="text-xl font-semibold">Power Converter</h2>
+                            <p class="text-gray-300 text-sm mt-1">Convert kW, amps, kVA, and kVAR at a chosen voltage and power factor</p>
+                        </div>
+                    </div>
+                    <div class="p-6">
+                        <div class="flex flex-wrap gap-2 mb-6">
+                            <button type="button" class="power-preset px-3 py-1 rounded-md bg-gray-900 border border-gray-700 text-sm text-gray-300" data-phase="single" data-voltage="230">230 V single</button>
+                            <button type="button" class="power-preset px-3 py-1 rounded-md bg-gray-900 border border-gray-700 text-sm text-gray-300" data-phase="single" data-voltage="240">240 V single</button>
+                            <button type="button" class="power-preset px-3 py-1 rounded-md bg-gray-900 border border-gray-700 text-sm text-gray-300" data-phase="single" data-voltage="120">120 V single</button>
+                            <button type="button" class="power-preset px-3 py-1 rounded-md bg-gray-900 border border-gray-700 text-sm text-gray-300" data-phase="three" data-voltage="400">400 V 3-phase</button>
+                            <button type="button" class="power-preset px-3 py-1 rounded-md bg-gray-900 border border-gray-700 text-sm text-gray-300" data-phase="three" data-voltage="415">415 V 3-phase</button>
+                            <button type="button" class="power-preset px-3 py-1 rounded-md bg-gray-900 border border-gray-700 text-sm text-gray-300" data-phase="three" data-voltage="480">480 V 3-phase</button>
+                            <button type="button" class="power-preset px-3 py-1 rounded-md bg-gray-900 border border-gray-700 text-sm text-gray-300" data-phase="dc" data-voltage="24">24 V DC</button>
+                        </div>
+                        <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6">
+                            <div class="space-y-2">
+                                <label class="block text-sm font-medium text-gray-400">Supply</label>
+                                <select
+                                    id="power-phase"
+                                    class="input-highlight w-full bg-gray-900 border border-gray-700 rounded-md py-3 px-4 text-lg text-gray-100 focus:outline-none focus:ring-2 focus:ring-purple-400 focus:border-purple-400 appearance-none"
+                                >
+                                    <option value="single" selected>Single phase</option>
+                                    <option value="three">Three phase</option>
+                                    <option value="dc">DC</option>
+                                </select>
+                            </div>
+                            <div class="space-y-2">
+                                <label class="block text-sm font-medium text-gray-400">Voltage (V)</label>
+                                <input
+                                    type="number"
+                                    id="power-voltage"
+                                    value="230"
+                                    min="0"
+                                    step="any"
+                                    class="input-highlight w-full bg-gray-900 border border-gray-700 rounded-md py-3 px-4 text-lg text-gray-100 focus:outline-none focus:ring-2 focus:ring-purple-400 focus:border-purple-400"
+                                    placeholder="230"
+                                >
+                            </div>
+                            <div class="space-y-2">
+                                <label class="block text-sm font-medium text-gray-400">Power factor</label>
+                                <input
+                                    type="number"
+                                    id="power-pf"
+                                    value="1"
+                                    min="0"
+                                    max="1"
+                                    step="0.01"
+                                    class="input-highlight w-full bg-gray-900 border border-gray-700 rounded-md py-3 px-4 text-lg text-gray-100 focus:outline-none focus:ring-2 focus:ring-purple-400 focus:border-purple-400"
+                                    placeholder="1.00"
+                                >
+                            </div>
+                        </div>
+                        <p class="text-sm text-gray-400 mb-6">Enter any one power value. The others follow the voltage, supply, and power factor.</p>
+                        <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                            <div class="space-y-2">
+                                <label class="block text-sm font-medium text-gray-400">Real power (kW)</label>
+                                <input type="number" id="power-kw" value="5.000" step="any" class="input-highlight w-full bg-gray-900 border border-gray-700 rounded-md py-3 px-4 text-lg text-gray-100 focus:outline-none focus:ring-2 focus:ring-purple-400 focus:border-purple-400" placeholder="0.000">
+                            </div>
+                            <div class="space-y-2">
+                                <label class="block text-sm font-medium text-gray-400">Current (A)</label>
+                                <input type="number" id="power-amps" step="any" class="input-highlight w-full bg-gray-900 border border-gray-700 rounded-md py-3 px-4 text-lg text-gray-100 focus:outline-none focus:ring-2 focus:ring-purple-400 focus:border-purple-400" placeholder="0.00">
+                            </div>
+                            <div class="space-y-2">
+                                <label class="block text-sm font-medium text-gray-400">Apparent power (kVA)</label>
+                                <input type="number" id="power-kva" step="any" class="input-highlight w-full bg-gray-900 border border-gray-700 rounded-md py-3 px-4 text-lg text-gray-100 focus:outline-none focus:ring-2 focus:ring-purple-400 focus:border-purple-400" placeholder="0.000">
+                            </div>
+                            <div class="space-y-2">
+                                <label class="block text-sm font-medium text-gray-400">Reactive power (kVAR)</label>
+                                <input type="number" id="power-kvar" step="any" class="input-highlight w-full bg-gray-900 border border-gray-700 rounded-md py-3 px-4 text-lg text-gray-100 focus:outline-none focus:ring-2 focus:ring-purple-400 focus:border-purple-400" placeholder="0.000">
+                            </div>
+                            <div class="space-y-2">
+                                <label class="block text-sm font-medium text-gray-400">Horsepower (745.7 W)</label>
+                                <input type="number" id="power-hp" step="any" class="input-highlight w-full bg-gray-900 border border-gray-700 rounded-md py-3 px-4 text-lg text-gray-100 focus:outline-none focus:ring-2 focus:ring-purple-400 focus:border-purple-400" placeholder="0.000">
+                            </div>
+                            <div class="space-y-2">
+                                <label class="block text-sm font-medium text-gray-400">Heat equivalent (BTU/h)</label>
+                                <input type="number" id="power-btu" step="any" class="input-highlight w-full bg-gray-900 border border-gray-700 rounded-md py-3 px-4 text-lg text-gray-100 focus:outline-none focus:ring-2 focus:ring-purple-400 focus:border-purple-400" placeholder="0.0">
+                            </div>
+                        </div>
+                        <p id="power-message" class="text-sm text-amber-300 mt-4 hidden"></p>
+                        <div class="mt-8 bg-gray-900 rounded-lg p-6 border border-gray-700">
+                            <div class="flex justify-between items-center gap-4">
+                                <div>
+                                    <p class="text-sm text-gray-400">Line current</p>
+                                    <h2 id="power-result" class="text-3xl font-bold mt-1">—</h2>
+                                </div>
+                                <div class="text-right">
+                                    <p id="power-summary" class="text-sm text-gray-400"></p>
+                                    <p id="power-formula" class="text-sm text-gray-500 mt-1"></p>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="mt-6 bg-gray-900 rounded-lg p-6 border border-gray-700">
+                            <h3 class="text-lg font-semibold text-purple-400 mb-4">Notes</h3>
+                            <div class="space-y-3 text-gray-200 text-sm">
+                                <p>1. Single phase: kW = V × I × PF / 1000. Current is I = (kW × 1000) / (V × PF).</p>
+                                <p>2. Three phase: kW = √3 × V × I × PF / 1000. V is the line-to-line voltage, and I is the line current.</p>
+                                <p>3. DC: kW = V × I / 1000. Power factor is not used, so kVA matches kW and kVAR is zero.</p>
+                                <p>4. kVA = kW / PF. kVAR = √(kVA² − kW²), shown as a magnitude for a lagging power factor.</p>
+                                <p>5. Use a power factor of 1.0 for heaters and other resistive loads. Motors are often about 0.8 to 0.9.</p>
+                                <p>6. Horsepower is the electrical equivalent of the real power, using 745.7 W per hp. BTU/h is the heat equivalent, using 3412.14 BTU/h per kW.</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <footer class="text-center text-xs text-gray-400 mt-8 mb-6">
+                <p>In Vitro Technicians Tool Kit &copy; 2026. For educational and informational purposes only.</p>
+                <p class="mt-1 text-gray-500">2026.11.2.1</p>
+            </footer>
             </div>
         </div>
     </div>
@@ -1807,12 +1927,179 @@
 
             updateCalibration();
         })();
-    </script>
 
-    <!-- Footer/Disclaimer -->
-    <div class="text-center text-xs text-gray-400 mt-8">
-        <p>In Vitro Technicians Tool Kit &copy; 2026. For educational and informational purposes only.</p>
-    </div>
+        // Power Converter Logic
+        (function() {
+            const phaseEl = document.getElementById('power-phase');
+            const voltageEl = document.getElementById('power-voltage');
+            const pfEl = document.getElementById('power-pf');
+            const fields = {
+                kw: document.getElementById('power-kw'),
+                amps: document.getElementById('power-amps'),
+                kva: document.getElementById('power-kva'),
+                kvar: document.getElementById('power-kvar'),
+                hp: document.getElementById('power-hp'),
+                btu: document.getElementById('power-btu')
+            };
+            const resultEl = document.getElementById('power-result');
+            const summaryEl = document.getElementById('power-summary');
+            const formulaEl = document.getElementById('power-formula');
+            const messageEl = document.getElementById('power-message');
+            const presets = document.querySelectorAll('.power-preset');
+
+            const WATTS_PER_HP = 745.7;
+            const BTU_PER_KW = 3412.14;
+            const digits = { kw: 3, amps: 2, kva: 3, kvar: 3, hp: 3, btu: 1 };
+            let lastEdited = 'kw';
+
+            function phaseFactor(phase) {
+                return phase === 'three' ? Math.sqrt(3) : 1;
+            }
+
+            function setMessage(text) {
+                messageEl.textContent = text || '';
+                messageEl.classList.toggle('hidden', !text);
+            }
+
+            function clearOutputs(activeKey) {
+                Object.keys(fields).forEach(key => {
+                    if (key !== activeKey) fields[key].value = '';
+                });
+                resultEl.textContent = '—';
+                summaryEl.textContent = '';
+                formulaEl.textContent = '';
+            }
+
+            function readSupply() {
+                const phase = phaseEl.value;
+                const voltage = parseFloat(voltageEl.value);
+                const pf = phase === 'dc' ? 1 : parseFloat(pfEl.value);
+                return { phase, voltage, pf };
+            }
+
+            function valuesFromKw(kw, supply) {
+                const factor = phaseFactor(supply.phase);
+                const amps = (kw * 1000) / (factor * supply.voltage * supply.pf);
+                const kva = kw / supply.pf;
+                const kvar = supply.pf >= 1 ? 0 : Math.sqrt(Math.max(0, (kva * kva) - (kw * kw)));
+                return {
+                    kw: kw,
+                    amps: amps,
+                    kva: kva,
+                    kvar: kvar,
+                    hp: (kw * 1000) / WATTS_PER_HP,
+                    btu: kw * BTU_PER_KW
+                };
+            }
+
+            function kwFromEdited(supply) {
+                const raw = parseFloat(fields[lastEdited].value);
+                if (isNaN(raw)) return { ok: false, reason: 'empty' };
+                const factor = phaseFactor(supply.phase);
+                if (lastEdited === 'kw') return { ok: true, kw: raw };
+                if (lastEdited === 'amps') return { ok: true, kw: (factor * supply.voltage * raw * supply.pf) / 1000 };
+                if (lastEdited === 'kva') return { ok: true, kw: raw * supply.pf };
+                if (lastEdited === 'hp') return { ok: true, kw: (raw * WATTS_PER_HP) / 1000 };
+                if (lastEdited === 'btu') return { ok: true, kw: raw / BTU_PER_KW };
+                if (supply.pf >= 0.999999) return { ok: false, reason: 'kvar-unity' };
+                const tanTheta = Math.sqrt(1 - (supply.pf * supply.pf)) / supply.pf;
+                return { ok: true, kw: Math.abs(raw) / tanTheta };
+            }
+
+            function formulaText(phase) {
+                if (phase === 'three') return 'I = (kW × 1000) / (√3 × V × PF)';
+                if (phase === 'dc') return 'I = (kW × 1000) / V';
+                return 'I = (kW × 1000) / (V × PF)';
+            }
+
+            function updatePresetStyles(phase, voltage) {
+                presets.forEach(btn => {
+                    const match = btn.dataset.phase === phase && parseFloat(btn.dataset.voltage) === voltage;
+                    btn.classList.toggle('border-purple-400', match);
+                    btn.classList.toggle('text-white', match);
+                    btn.classList.toggle('border-gray-700', !match);
+                    btn.classList.toggle('text-gray-300', !match);
+                });
+            }
+
+            function convert() {
+                const dc = phaseEl.value === 'dc';
+                pfEl.disabled = dc;
+                pfEl.classList.toggle('opacity-50', dc);
+                if (dc) pfEl.value = '1';
+
+                const supply = readSupply();
+                updatePresetStyles(supply.phase, supply.voltage);
+
+                if (isNaN(supply.voltage) || supply.voltage <= 0) {
+                    setMessage('Enter a voltage above 0.');
+                    clearOutputs(lastEdited);
+                    return;
+                }
+                if (!dc && (isNaN(supply.pf) || supply.pf <= 0 || supply.pf > 1)) {
+                    setMessage('Power factor must be greater than 0 and no more than 1.');
+                    clearOutputs(lastEdited);
+                    return;
+                }
+
+                let solved = kwFromEdited(supply);
+                if (!solved.ok && solved.reason === 'kvar-unity') {
+                    const kw = parseFloat(fields.kw.value);
+                    if (isNaN(kw)) {
+                        setMessage('Reactive power is zero at a power factor of 1. Enter kW, amps, or kVA instead.');
+                        fields.kvar.value = '0.000';
+                        return;
+                    }
+                    lastEdited = 'kw';
+                    solved = { ok: true, kw: kw };
+                    setMessage('Reactive power is zero at a power factor of 1.');
+                } else if (!solved.ok) {
+                    setMessage('');
+                    clearOutputs(lastEdited);
+                    return;
+                } else {
+                    setMessage('');
+                }
+
+                const values = valuesFromKw(solved.kw, supply);
+                if (!isFinite(values.amps) || !isFinite(values.kva)) {
+                    setMessage('That combination cannot be calculated. Check the voltage and power factor.');
+                    clearOutputs(lastEdited);
+                    return;
+                }
+
+                Object.keys(fields).forEach(key => {
+                    if (key === lastEdited) return;
+                    fields[key].value = values[key].toFixed(digits[key]);
+                });
+
+                resultEl.textContent = values.amps.toFixed(2) + ' A';
+                summaryEl.textContent = supply.phase === 'dc'
+                    ? values.kw.toFixed(3) + ' kW at ' + supply.voltage + ' V DC'
+                    : values.kw.toFixed(3) + ' kW at ' + supply.voltage + ' V, ' + (supply.phase === 'three' ? 'three phase' : 'single phase') + ', PF ' + supply.pf.toFixed(2);
+                formulaEl.textContent = formulaText(supply.phase);
+            }
+
+            Object.keys(fields).forEach(key => {
+                fields[key].addEventListener('input', function() {
+                    lastEdited = key;
+                    convert();
+                });
+            });
+            voltageEl.addEventListener('input', convert);
+            pfEl.addEventListener('input', convert);
+            phaseEl.addEventListener('change', convert);
+            presets.forEach(btn => {
+                btn.addEventListener('click', function() {
+                    phaseEl.value = btn.dataset.phase;
+                    voltageEl.value = btn.dataset.voltage;
+                    convert();
+                });
+            });
+
+            convert();
+        })();
+    </script>
 </body>
 </html>
 
