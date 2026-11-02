@@ -1,0 +1,1820 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>In Vitro Technicians Tool Kit</title>
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🔬</text></svg>" type="image/svg+xml">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        .gradient-bg {
+            background: linear-gradient(135deg, #232526 0%, #8a2be2 100%);
+        }
+        .lab-icon {
+            animation: float 3s ease-in-out infinite;
+        }
+        @keyframes float {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-10px); }
+        }
+        .glow {
+            box-shadow: 0 0 15px rgba(138, 43, 226, 0.7), 0 0 10px #232526;
+        }
+        .input-highlight { transition: all 0.3s ease; }
+        .input-highlight:focus {
+            border-color: #8a2be2;
+            box-shadow: 0 0 0 3px rgba(138, 43, 226, 0.3);
+        }
+        .tab-active {
+            background: linear-gradient(135deg, #232526 0%, #8a2be2 100%);
+            color: #fff;
+        }
+        
+        /* Side Menu Styles */
+        .side-menu {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 300px;
+            height: 100vh;
+            background: linear-gradient(135deg, #232526 0%, #8a2be2 100%);
+            transition: left 0.3s ease;
+            z-index: 1000;
+            overflow-y: auto;
+        }
+        
+        .side-menu.closed {
+            left: -300px;
+        }
+        
+        .side-menu-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.5);
+            z-index: 999;
+            opacity: 0;
+            visibility: hidden;
+            transition: all 0.3s ease;
+        }
+        
+        .side-menu-overlay.open {
+            opacity: 1;
+            visibility: visible;
+        }
+        
+        .menu-toggle {
+            position: fixed;
+            top: 20px;
+            left: 320px;
+            z-index: 1001;
+            background: linear-gradient(135deg, #232526 0%, #8a2be2 100%);
+            border: none;
+            color: white;
+            padding: 12px;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+        
+        .menu-toggle.menu-closed {
+            left: 20px;
+        }
+        
+        .menu-toggle:hover {
+            transform: scale(1.1);
+        }
+        
+        .main-content {
+            margin-left: 300px;
+            transition: margin-left 0.3s ease;
+            width: calc(100% - 300px);
+        }
+        
+        .main-content.menu-closed {
+            margin-left: 0;
+            width: 100%;
+        }
+        
+        .side-menu-btn {
+            display: block;
+            width: 100%;
+            padding: 15px 20px;
+            color: white;
+            text-decoration: none;
+            border: none;
+            background: none;
+            text-align: left;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        }
+        
+        .side-menu-btn:hover {
+            background: rgba(255, 255, 255, 0.1);
+        }
+        
+        .side-menu-btn.tab-active {
+            background: rgba(255, 255, 255, 0.2);
+            border-left: 4px solid #8a2be2;
+        }
+        
+        @media (max-width: 768px) {
+            .main-content {
+                margin-left: 0;
+                width: 100%;
+            }
+            
+            .main-content.menu-closed {
+                margin-left: 0;
+                width: 100%;
+            }
+            
+            .side-menu {
+                width: 280px;
+                left: -280px;
+            }
+            
+            .side-menu.open {
+                left: 0;
+            }
+            
+            .menu-toggle {
+                left: 20px;
+            }
+            
+            .menu-toggle.menu-closed {
+                left: 20px;
+            }
+        }
+    </style>
+</head>
+<body class="min-h-screen bg-gray-900 text-gray-100">
+    <!-- Menu Toggle Button -->
+    <button class="menu-toggle" id="menuToggle">
+        <i class="fas fa-bars text-xl"></i>
+    </button>
+    
+    <!-- Side Menu Overlay -->
+    <div class="side-menu-overlay" id="menuOverlay"></div>
+    
+    <!-- Side Menu -->
+    <div class="side-menu" id="sideMenu">
+        <div class="px-6 pb-6 pt-20 md:pt-6 border-b border-gray-600">
+            <h2 class="text-xl font-bold text-white">Tool Kit</h2>
+            <p class="text-gray-300 text-sm mt-1">Select a converter</p>
+        </div>
+        <nav class="py-4">
+            <button class="side-menu-btn tab-active" data-tab="pressure-converter">
+                <i class="fas fa-tachometer-alt mr-3"></i>Pressure Converter
+            </button>
+            <button class="side-menu-btn" data-tab="thermocouple-converter">
+                <i class="fas fa-thermometer-half mr-3"></i>Thermocouple Converter
+            </button>
+            <button class="side-menu-btn" data-tab="rtd-converter">
+                <i class="fas fa-wave-square mr-3"></i>RTD Converter
+            </button>
+            <button class="side-menu-btn" data-tab="steam-converter">
+                <i class="fas fa-cloud mr-3"></i>Steam Converter
+            </button>
+            <button class="side-menu-btn" data-tab="a0-calculator">
+                <i class="fas fa-calculator mr-3"></i>A0 Calculator
+            </button>
+            <button class="side-menu-btn" data-tab="temp-probe-calibration">
+                <i class="fas fa-temperature-high mr-3"></i>Temp Probe Calibration
+            </button>
+        </nav>
+    </div>
+    
+    <div class="main-content" id="mainContent">
+        <div class="container mx-auto px-4 py-8">
+            <div class="max-w-4xl mx-auto" id="main-container">
+            <!-- Header -->
+            <header class="text-center mb-10">
+                <div class="lab-icon inline-block mb-4">
+                    <i class="fas fa-flask text-6xl text-purple-400"></i>
+                </div>
+                <h1 class="text-4xl font-bold text-gray-100 mb-2">In Vitro Technicians Tool Kit</h1>
+                <p class="text-gray-400">Essential conversion tools for In Vitro technicians</p>
+            </header>
+
+            <!-- Pressure Converter Section -->
+            <div id="pressure-converter" class="tool-section">
+                <div class="bg-gray-800 rounded-xl shadow-lg overflow-hidden mb-8">
+                    <div class="gradient-bg p-4 text-white flex justify-between items-center">
+                        <div>
+                            <h2 class="text-xl font-semibold">Pressure Converter</h2>
+                            <p class="text-gray-300 text-sm mt-1">Convert between popular pressure units</p>
+                        </div>
+                    </div>
+                    <div class="p-6">
+                        <div class="grid grid-cols-1 md:grid-cols-3 gap-6 items-end">
+                            <div class="space-y-2">
+                                <label class="block text-sm font-medium text-gray-400">Value</label>
+                                <input 
+                                    type="number" 
+                                    id="pressure-value" 
+                                    value="1"
+                                    step="any"
+                                    class="input-highlight w-full bg-gray-900 border border-gray-700 rounded-md py-3 px-4 text-lg text-gray-100 focus:outline-none focus:ring-2 focus:ring-purple-400 focus:border-purple-400"
+                                    placeholder="0.00"
+                                >
+                            </div>
+                            <div class="space-y-2">
+                                <label class="block text-sm font-medium text-gray-400">From</label>
+                                <select 
+                                    id="pressure-from"
+                                    class="input-highlight w-full bg-gray-900 border border-gray-700 rounded-md py-3 px-4 text-lg text-gray-100 focus:outline-none focus:ring-2 focus:ring-purple-400 focus:border-purple-400 appearance-none"
+                                >
+                                    <option value="psi">PSI (pound per square inch)</option>
+                                    <option value="bar" selected>Bar</option>
+                                    <option value="kpa">kPa (kilopascal)</option>
+                                    <option value="mpa">MPa (megapascal)</option>
+                                    <option value="atm">Atm (atmosphere)</option>
+                                    <option value="torr">Torr</option>
+                                    <option value="mmhg">mmHg (millimeter of mercury)</option>
+                                    <option value="inhg">inHg (inch of mercury)</option>
+                                    <option value="pa">Pa (pascal)</option>
+                                </select>
+                            </div>
+                            <div class="space-y-2">
+                                <label class="block text-sm font-medium text-gray-400">To</label>
+                                <select 
+                                    id="pressure-to"
+                                    class="input-highlight w-full bg-gray-900 border border-gray-700 rounded-md py-3 px-4 text-lg text-gray-100 focus:outline-none focus:ring-2 focus:ring-purple-400 focus:border-purple-400 appearance-none"
+                                >
+                                    <option value="psi">PSI (pound per square inch)</option>
+                                    <option value="bar">Bar</option>
+                                    <option value="kpa" selected>kPa (kilopascal)</option>
+                                    <option value="mpa">MPa (megapascal)</option>
+                                    <option value="atm">Atm (atmosphere)</option>
+                                    <option value="torr">Torr</option>
+                                    <option value="mmhg">mmHg (millimeter of mercury)</option>
+                                    <option value="inhg">inHg (inch of mercury)</option>
+                                    <option value="pa">Pa (pascal)</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div class="mt-8 bg-gray-900 rounded-lg p-6 border border-gray-700">
+                            <div class="flex justify-between items-center">
+                                <div>
+                                    <p class="text-sm text-gray-400">Conversion Result</p>
+                                    <h2 id="pressure-result" class="text-3xl font-bold mt-1">0.00</h2>
+                                </div>
+                                <div class="text-right">
+                                    <p id="pressure-conversion-rate" class="text-sm text-gray-400">1 Bar = 100.00 kPa</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Thermocouple Converter Section -->
+            <div id="thermocouple-converter" class="tool-section hidden">
+                <div class="bg-gray-800 rounded-xl shadow-lg overflow-hidden mb-8">
+                    <div class="gradient-bg p-4 text-white flex justify-between items-center">
+                        <div>
+                            <h2 class="text-xl font-semibold">Thermocouple Converter</h2>
+                            <p class="text-gray-300 text-sm mt-1">Convert between mV, Celsius, and Fahrenheit for K and T thermocouples</p>
+                        </div>
+                    </div>
+                    <div class="p-6">
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
+                            <div class="space-y-2">
+                                <label class="block text-sm font-medium text-gray-400">Thermocouple Type</label>
+                                <select 
+                                    id="thermocouple-type"
+                                    class="input-highlight w-full bg-gray-900 border border-gray-700 rounded-md py-3 px-4 text-lg text-gray-100 focus:outline-none focus:ring-2 focus:ring-purple-400 focus:border-purple-400 appearance-none"
+                                >
+                                    <option value="K">Type K (Chromel-Alumel)</option>
+                                    <option value="T">Type T (Copper-Constantan)</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                            <div class="space-y-2">
+                                <label class="block text-sm font-medium text-gray-400">Millivolts (mV)</label>
+                                <input 
+                                    type="number" 
+                                    id="thermocouple-mv" 
+                                    value="0"
+                                    step="0.001"
+                                    class="input-highlight w-full bg-gray-900 border border-gray-700 rounded-md py-3 px-4 text-lg text-gray-100 focus:outline-none focus:ring-2 focus:ring-purple-400 focus:border-purple-400"
+                                    placeholder="0.000"
+                                >
+                            </div>
+                            <div class="space-y-2">
+                                <label class="block text-sm font-medium text-gray-400">Temperature in Celsius (°C)</label>
+                                <input 
+                                    type="number" 
+                                    id="thermocouple-celsius" 
+                                    value="0"
+                                    step="0.01"
+                                    class="input-highlight w-full bg-gray-900 border border-gray-700 rounded-md py-3 px-4 text-lg text-gray-100 focus:outline-none focus:ring-2 focus:ring-purple-400 focus:border-purple-400"
+                                    placeholder="0.00"
+                                >
+                            </div>
+                            <div class="space-y-2">
+                                <label class="block text-sm font-medium text-gray-400">Temperature in Fahrenheit (°F)</label>
+                                <input 
+                                    type="number" 
+                                    id="thermocouple-fahrenheit" 
+                                    value="32"
+                                    step="0.01"
+                                    class="input-highlight w-full bg-gray-900 border border-gray-700 rounded-md py-3 px-4 text-lg text-gray-100 focus:outline-none focus:ring-2 focus:ring-purple-400 focus:border-purple-400"
+                                    placeholder="32.00"
+                                >
+                            </div>
+                        </div>
+                        <div class="mt-4 text-xs text-gray-500">
+                            <p>Enter any value and the other two will be calculated automatically</p>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Thermocouple Reference Chart -->
+                <div class="bg-gray-800 rounded-xl shadow-lg overflow-hidden mb-8">
+                    <div class="gradient-bg p-4 text-white">
+                        <h3 class="text-lg font-semibold">Thermocouple Types, Materials & Color Codes</h3>
+                    </div>
+                    <div class="p-6">
+                        <div class="flex justify-center mb-6">
+                            <img 
+                                src="https://www.thermocoupleinfo.com/images/color-codes.jpg" 
+                                alt="Thermocouple Types, Materials and Color Codes Reference Chart"
+                                class="max-w-full h-auto rounded-lg border border-gray-700 shadow-lg"
+                            >
+                        </div>
+                        <div class="bg-gray-900 rounded-lg p-4 border border-gray-700 overflow-x-auto">
+                            <table class="w-full text-sm">
+                                <thead>
+                                    <tr class="border-b border-gray-700">
+                                        <th class="text-left py-2 px-3 text-purple-400">Type</th>
+                                        <th class="text-left py-2 px-3 text-purple-400">Positive Lead</th>
+                                        <th class="text-left py-2 px-3 text-purple-400">Negative Lead</th>
+                                        <th class="text-left py-2 px-3 text-purple-400">Temp Range</th>
+                                        <th class="text-left py-2 px-3 text-purple-400">Color Code (ANSI MC96.1)</th>
+                                    </tr>
+                                </thead>
+                                <tbody class="text-gray-300">
+                                    <tr class="border-b border-gray-800">
+                                        <td class="py-2 px-3 font-semibold">K</td>
+                                        <td class="py-2 px-3">Chromel (Ni-Cr)</td>
+                                        <td class="py-2 px-3">Alumel (Ni-Al)</td>
+                                        <td class="py-2 px-3">-200°C to 1372°C</td>
+                                        <td class="py-2 px-3">Yellow / Red</td>
+                                    </tr>
+                                    <tr class="border-b border-gray-800">
+                                        <td class="py-2 px-3 font-semibold">T</td>
+                                        <td class="py-2 px-3">Copper</td>
+                                        <td class="py-2 px-3">Constantan (Cu-Ni)</td>
+                                        <td class="py-2 px-3">-200°C to 400°C</td>
+                                        <td class="py-2 px-3">Blue / Red</td>
+                                    </tr>
+                                    <tr class="border-b border-gray-800">
+                                        <td class="py-2 px-3 font-semibold">J</td>
+                                        <td class="py-2 px-3">Iron</td>
+                                        <td class="py-2 px-3">Constantan (Cu-Ni)</td>
+                                        <td class="py-2 px-3">-210°C to 1200°C</td>
+                                        <td class="py-2 px-3">White / Red</td>
+                                    </tr>
+                                    <tr class="border-b border-gray-800">
+                                        <td class="py-2 px-3 font-semibold">E</td>
+                                        <td class="py-2 px-3">Chromel (Ni-Cr)</td>
+                                        <td class="py-2 px-3">Constantan (Cu-Ni)</td>
+                                        <td class="py-2 px-3">-200°C to 1000°C</td>
+                                        <td class="py-2 px-3">Purple / Red</td>
+                                    </tr>
+                                    <tr class="border-b border-gray-800">
+                                        <td class="py-2 px-3 font-semibold">R</td>
+                                        <td class="py-2 px-3">Platinum-13% Rhodium</td>
+                                        <td class="py-2 px-3">Platinum</td>
+                                        <td class="py-2 px-3">0°C to 1768°C</td>
+                                        <td class="py-2 px-3">Black / Red</td>
+                                    </tr>
+                                    <tr class="border-b border-gray-800">
+                                        <td class="py-2 px-3 font-semibold">S</td>
+                                        <td class="py-2 px-3">Platinum-10% Rhodium</td>
+                                        <td class="py-2 px-3">Platinum</td>
+                                        <td class="py-2 px-3">0°C to 1768°C</td>
+                                        <td class="py-2 px-3">Black / Red</td>
+                                    </tr>
+                                    <tr class="border-b border-gray-800">
+                                        <td class="py-2 px-3 font-semibold">B</td>
+                                        <td class="py-2 px-3">Platinum-30% Rhodium</td>
+                                        <td class="py-2 px-3">Platinum-6% Rhodium</td>
+                                        <td class="py-2 px-3">0°C to 1820°C</td>
+                                        <td class="py-2 px-3">Gray / Red</td>
+                                    </tr>
+                                    <tr>
+                                        <td class="py-2 px-3 font-semibold">N</td>
+                                        <td class="py-2 px-3">Nicrosil (Ni-Cr-Si)</td>
+                                        <td class="py-2 px-3">Nisil (Ni-Si)</td>
+                                        <td class="py-2 px-3">-200°C to 1300°C</td>
+                                        <td class="py-2 px-3">Orange / Red</td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- RTD Converter Section -->
+            <div id="rtd-converter" class="tool-section hidden">
+                <div class="bg-gray-800 rounded-xl shadow-lg overflow-hidden mb-8">
+                    <div class="gradient-bg p-4 text-white flex justify-between items-center">
+                        <div>
+                            <h2 class="text-xl font-semibold">RTD Converter</h2>
+                            <p class="text-gray-300 text-sm mt-1">Convert between resistance, Celsius, and Fahrenheit for PT100 and PT1000 RTDs. The Resistance value is between a red and white wire</p>
+                        </div>
+                    </div>
+                    <div class="p-6">
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
+                            <div class="space-y-2">
+                                <label class="block text-sm font-medium text-gray-400">RTD Type</label>
+                                <select 
+                                    id="rtd-type"
+                                    class="input-highlight w-full bg-gray-900 border border-gray-700 rounded-md py-3 px-4 text-lg text-gray-100 focus:outline-none focus:ring-2 focus:ring-purple-400 focus:border-purple-400 appearance-none"
+                                >
+                                    <option value="PT100">PT100 (100Ω at 0°C)</option>
+                                    <option value="PT1000">PT1000 (1000Ω at 0°C)</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                            <div class="space-y-2">
+                                <label class="block text-sm font-medium text-gray-400">Resistance (Ω)</label>
+                                <input 
+                                    type="number" 
+                                    id="rtd-resistance" 
+                                    value="100"
+                                    step="0.01"
+                                    class="input-highlight w-full bg-gray-900 border border-gray-700 rounded-md py-3 px-4 text-lg text-gray-100 focus:outline-none focus:ring-2 focus:ring-purple-400 focus:border-purple-400"
+                                    placeholder="100.00"
+                                >
+                            </div>
+                            <div class="space-y-2">
+                                <label class="block text-sm font-medium text-gray-400">Temperature in Celsius (°C)</label>
+                                <input 
+                                    type="number" 
+                                    id="rtd-celsius" 
+                                    value="0"
+                                    step="0.01"
+                                    class="input-highlight w-full bg-gray-900 border border-gray-700 rounded-md py-3 px-4 text-lg text-gray-100 focus:outline-none focus:ring-2 focus:ring-purple-400 focus:border-purple-400"
+                                    placeholder="0.00"
+                                >
+                            </div>
+                            <div class="space-y-2">
+                                <label class="block text-sm font-medium text-gray-400">Temperature in Fahrenheit (°F)</label>
+                                <input 
+                                    type="number" 
+                                    id="rtd-fahrenheit" 
+                                    value="32"
+                                    step="0.01"
+                                    class="input-highlight w-full bg-gray-900 border border-gray-700 rounded-md py-3 px-4 text-lg text-gray-100 focus:outline-none focus:ring-2 focus:ring-purple-400 focus:border-purple-400"
+                                    placeholder="32.00"
+                                >
+                            </div>
+                        </div>
+                        <div class="mt-4 text-xs text-gray-500">
+                            <p>Enter any value and the other two will be calculated automatically</p>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- RTD Reference Chart -->
+                <div class="bg-gray-800 rounded-xl shadow-lg overflow-hidden mb-8">
+                    <div class="gradient-bg p-4 text-white">
+                        <h3 class="text-lg font-semibold">RTD Color Codes Reference</h3>
+                    </div>
+                    <div class="p-6">
+                        <div class="flex justify-center mb-6">
+                            <img 
+                                src="https://www.tcaus.com.au/images/reference/RTD-colour-codes.png" 
+                                alt="RTD Color Codes Reference Chart"
+                                class="max-w-full h-auto rounded-lg border border-gray-700 shadow-lg"
+                            >
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Steam Converter Section -->
+            <div id="steam-converter" class="tool-section hidden">
+                <div class="bg-gray-800 rounded-xl shadow-lg overflow-hidden mb-8">
+                    <div class="gradient-bg p-4 text-white flex justify-between items-center">
+                        <div>
+                            <h2 class="text-xl font-semibold">Steam Converter</h2>
+                            <p class="text-gray-300 text-sm mt-1">Convert between saturated steam pressure and temperature</p>
+                        </div>
+                    </div>
+                    <div class="p-6">
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
+                            <div class="space-y-2">
+                                <label class="block text-sm font-medium text-gray-400">Pressure Unit</label>
+                                <select 
+                                    id="steam-pressure-unit"
+                                    class="input-highlight w-full bg-gray-900 border border-gray-700 rounded-md py-3 px-4 text-lg text-gray-100 focus:outline-none focus:ring-2 focus:ring-purple-400 focus:border-purple-400 appearance-none"
+                                >
+                                    <option value="bar-abs">bar abs (absolute)</option>
+                                    <option value="bar-g">barG (gauge)</option>
+                                    <option value="kpa-g">kPaG (gauge)</option>
+                                    <option value="kpa-abs">kPa abs (absolute)</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                            <div class="space-y-2">
+                                <label class="block text-sm font-medium text-gray-400">Pressure Value</label>
+                                <input 
+                                    type="number" 
+                                    id="steam-pressure" 
+                                    value="1"
+                                    step="0.001"
+                                    class="input-highlight w-full bg-gray-900 border border-gray-700 rounded-md py-3 px-4 text-lg text-gray-100 focus:outline-none focus:ring-2 focus:ring-purple-400 focus:border-purple-400"
+                                    placeholder="1.000"
+                                >
+                            </div>
+                            <div class="space-y-2">
+                                <label class="block text-sm font-medium text-gray-400">Temperature in Celsius (°C)</label>
+                                <input 
+                                    type="number" 
+                                    id="steam-celsius" 
+                                    value="100"
+                                    step="0.01"
+                                    class="input-highlight w-full bg-gray-900 border border-gray-700 rounded-md py-3 px-4 text-lg text-gray-100 focus:outline-none focus:ring-2 focus:ring-purple-400 focus:border-purple-400"
+                                    placeholder="100.00"
+                                >
+                            </div>
+                            <div class="space-y-2">
+                                <label class="block text-sm font-medium text-gray-400">Temperature in Fahrenheit (°F)</label>
+                                <input 
+                                    type="number" 
+                                    id="steam-fahrenheit" 
+                                    value="212"
+                                    step="0.01"
+                                    class="input-highlight w-full bg-gray-900 border border-gray-700 rounded-md py-3 px-4 text-lg text-gray-100 focus:outline-none focus:ring-2 focus:ring-purple-400 focus:border-purple-400"
+                                    placeholder="212.00"
+                                >
+                            </div>
+                        </div>
+                        <div class="mt-4 text-xs text-gray-500">
+                            <p>Enter any value and the other two will be calculated automatically</p>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Common Conversions Section -->
+                <div class="bg-gray-800 rounded-xl shadow-lg overflow-hidden mb-8">
+                    <div class="gradient-bg p-4 text-white">
+                        <h3 class="text-lg font-semibold">Common Sterilization Temperatures</h3>
+                    </div>
+                    <div class="p-6">
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                            <div class="bg-gray-900 rounded-lg p-6 border border-gray-700">
+                                <h4 class="text-lg font-semibold text-purple-400 mb-4">134.5°C</h4>
+                                <div class="space-y-2">
+                                    <div class="flex justify-between items-center">
+                                        <span class="text-gray-400">Pressure (bar abs):</span>
+                                        <span class="text-xl font-bold" id="steam-common-134-bar">3.031</span>
+                                    </div>
+                                    <div class="flex justify-between items-center">
+                                        <span class="text-gray-400">Pressure (kPa abs):</span>
+                                        <span class="text-xl font-bold" id="steam-common-134-kpa">303.1</span>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="bg-gray-900 rounded-lg p-6 border border-gray-700">
+                                <h4 class="text-lg font-semibold text-purple-400 mb-4">121°C</h4>
+                                <div class="space-y-2">
+                                    <div class="flex justify-between items-center">
+                                        <span class="text-gray-400">Pressure (bar abs):</span>
+                                        <span class="text-xl font-bold" id="steam-common-121-bar">2.025</span>
+                                    </div>
+                                    <div class="flex justify-between items-center">
+                                        <span class="text-gray-400">Pressure (kPa abs):</span>
+                                        <span class="text-xl font-bold" id="steam-common-121-kpa">202.5</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- A0 Calculator Section -->
+            <div id="a0-calculator" class="tool-section hidden">
+                <div class="bg-gray-800 rounded-xl shadow-lg overflow-hidden mb-8">
+                    <div class="gradient-bg p-4 text-white flex justify-between items-center">
+                        <div>
+                            <h2 class="text-xl font-semibold">A0 Calculator</h2>
+                            <p class="text-gray-300 text-sm mt-1">Calculate A0 values and equivalent time using the workbook formula</p>
+                        </div>
+                    </div>
+                    <div class="p-6">
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                            <div class="space-y-2">
+                                <label class="block text-sm font-medium text-gray-400">Temperature (°C)</label>
+                                <input
+                                    type="number"
+                                    id="a0-temperature"
+                                    value="90"
+                                    step="0.01"
+                                    class="input-highlight w-full bg-gray-900 border border-gray-700 rounded-md py-3 px-4 text-lg text-gray-100 focus:outline-none focus:ring-2 focus:ring-purple-400 focus:border-purple-400"
+                                    placeholder="90.00"
+                                >
+                            </div>
+                            <div class="space-y-2">
+                                <label class="block text-sm font-medium text-gray-400">A0 Value (seconds)</label>
+                                <input
+                                    type="number"
+                                    id="a0-value"
+                                    value="3000"
+                                    step="any"
+                                    class="input-highlight w-full bg-gray-900 border border-gray-700 rounded-md py-3 px-4 text-lg text-gray-100 focus:outline-none focus:ring-2 focus:ring-purple-400 focus:border-purple-400"
+                                    placeholder="3000"
+                                >
+                            </div>
+                            <div class="space-y-2">
+                                <label class="block text-sm font-medium text-gray-400">Time (seconds)</label>
+                                <input
+                                    type="number"
+                                    id="a0-time-seconds"
+                                    value="300"
+                                    step="any"
+                                    class="input-highlight w-full bg-gray-900 border border-gray-700 rounded-md py-3 px-4 text-lg text-gray-100 focus:outline-none focus:ring-2 focus:ring-purple-400 focus:border-purple-400"
+                                    placeholder="300"
+                                >
+                            </div>
+                            <div class="space-y-2">
+                                <label class="block text-sm font-medium text-gray-400">Time (minutes)</label>
+                                <input
+                                    type="number"
+                                    id="a0-time-minutes"
+                                    value="5"
+                                    step="any"
+                                    class="input-highlight w-full bg-gray-900 border border-gray-700 rounded-md py-3 px-4 text-lg text-gray-100 focus:outline-none focus:ring-2 focus:ring-purple-400 focus:border-purple-400"
+                                    placeholder="5"
+                                >
+                            </div>
+                        </div>
+
+                        <div class="mt-8 bg-gray-900 rounded-lg p-6 border border-gray-700">
+                            <h3 class="text-lg font-semibold text-purple-400 mb-4">Notes</h3>
+                            <p class="text-sm text-gray-300">1. To find the disinfection time required, change the temperature and the A0 value.</p>
+                            <p class="text-sm text-gray-300 mt-1">2. To find the A0 value, change the temperature and the disinfection time.</p>
+                            <p class="text-gray-200 mt-3">A0 = t * 10^((T - 80) / 10)</p>
+                            <p class="text-gray-200 mt-1">t = A0 / 10^((T - 80) / 10)</p>
+                            <p id="a0-factor-display" class="text-sm text-gray-400 mt-3">Temperature factor: 10.000000</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Temp Probe Calibration Section -->
+            <div id="temp-probe-calibration" class="tool-section hidden">
+                <div class="bg-gray-800 rounded-xl shadow-lg overflow-hidden mb-8">
+                    <div class="gradient-bg p-4 text-white flex justify-between items-center">
+                        <div>
+                            <h2 class="text-xl font-semibold">Temp Probe Calibration</h2>
+                            <p class="text-gray-300 text-sm mt-1">Calculate control and recording zero/span offsets for temperature probes</p>
+                        </div>
+                    </div>
+                    <div class="p-6">
+                        <div class="overflow-x-auto">
+                            <table class="w-full text-sm">
+                                <thead>
+                                    <tr class="border-b border-gray-700">
+                                        <th class="text-left text-gray-400 py-2 pr-3">Point</th>
+                                        <th class="text-left text-gray-400 py-2 pr-3">Reference Temp (°C)</th>
+                                        <th class="text-left text-gray-400 py-2 pr-3">Control Temp (°C)</th>
+                                        <th class="text-left text-gray-400 py-2 pr-3">Recording Temp (°C)</th>
+                                        <th class="text-left text-gray-400 py-2">Measure Uncertainty (°C)</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr class="border-b border-gray-700">
+                                        <td class="py-3 pr-3 text-gray-300">1</td>
+                                        <td class="py-3 pr-3"><input id="tpc-ref-1" type="number" value="45" step="0.1" class="input-highlight w-full bg-gray-900 border border-gray-700 rounded-md py-2 px-3 text-gray-100 focus:outline-none focus:ring-2 focus:ring-purple-400 focus:border-purple-400"></td>
+                                        <td class="py-3 pr-3"><input id="tpc-control-1" type="number" value="45" step="0.1" class="input-highlight w-full bg-gray-900 border border-gray-700 rounded-md py-2 px-3 text-gray-100 focus:outline-none focus:ring-2 focus:ring-purple-400 focus:border-purple-400"></td>
+                                        <td class="py-3 pr-3"><input id="tpc-record-1" type="number" value="45" step="0.1" class="input-highlight w-full bg-gray-900 border border-gray-700 rounded-md py-2 px-3 text-gray-100 focus:outline-none focus:ring-2 focus:ring-purple-400 focus:border-purple-400"></td>
+                                        <td class="py-3"><input id="tpc-unc-1" type="number" value="0.3" step="0.01" class="input-highlight w-full bg-gray-900 border border-gray-700 rounded-md py-2 px-3 text-gray-100 focus:outline-none focus:ring-2 focus:ring-purple-400 focus:border-purple-400"></td>
+                                    </tr>
+                                    <tr class="border-b border-gray-700">
+                                        <td class="py-3 pr-3 text-gray-300">2</td>
+                                        <td class="py-3 pr-3"><input id="tpc-ref-2" type="number" value="65" step="0.1" class="input-highlight w-full bg-gray-900 border border-gray-700 rounded-md py-2 px-3 text-gray-100 focus:outline-none focus:ring-2 focus:ring-purple-400 focus:border-purple-400"></td>
+                                        <td class="py-3 pr-3"><input id="tpc-control-2" type="number" value="65" step="0.1" class="input-highlight w-full bg-gray-900 border border-gray-700 rounded-md py-2 px-3 text-gray-100 focus:outline-none focus:ring-2 focus:ring-purple-400 focus:border-purple-400"></td>
+                                        <td class="py-3 pr-3"><input id="tpc-record-2" type="number" value="65" step="0.1" class="input-highlight w-full bg-gray-900 border border-gray-700 rounded-md py-2 px-3 text-gray-100 focus:outline-none focus:ring-2 focus:ring-purple-400 focus:border-purple-400"></td>
+                                        <td class="py-3"><input id="tpc-unc-2" type="number" value="0.3" step="0.01" class="input-highlight w-full bg-gray-900 border border-gray-700 rounded-md py-2 px-3 text-gray-100 focus:outline-none focus:ring-2 focus:ring-purple-400 focus:border-purple-400"></td>
+                                    </tr>
+                                    <tr>
+                                        <td class="py-3 pr-3 text-gray-300">3</td>
+                                        <td class="py-3 pr-3"><input id="tpc-ref-3" type="number" value="90" step="0.1" class="input-highlight w-full bg-gray-900 border border-gray-700 rounded-md py-2 px-3 text-gray-100 focus:outline-none focus:ring-2 focus:ring-purple-400 focus:border-purple-400"></td>
+                                        <td class="py-3 pr-3"><input id="tpc-control-3" type="number" value="90" step="0.1" class="input-highlight w-full bg-gray-900 border border-gray-700 rounded-md py-2 px-3 text-gray-100 focus:outline-none focus:ring-2 focus:ring-purple-400 focus:border-purple-400"></td>
+                                        <td class="py-3 pr-3"><input id="tpc-record-3" type="number" value="90" step="0.1" class="input-highlight w-full bg-gray-900 border border-gray-700 rounded-md py-2 px-3 text-gray-100 focus:outline-none focus:ring-2 focus:ring-purple-400 focus:border-purple-400"></td>
+                                        <td class="py-3"><input id="tpc-unc-3" type="number" value="0.3" step="0.01" class="input-highlight w-full bg-gray-900 border border-gray-700 rounded-md py-2 px-3 text-gray-100 focus:outline-none focus:ring-2 focus:ring-purple-400 focus:border-purple-400"></td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mt-6">
+                            <div class="bg-gray-900 rounded-lg p-6 border border-gray-700">
+                                <h3 class="text-lg font-semibold text-purple-400 mb-4">Control Probe Offsets</h3>
+                                <div class="space-y-2">
+                                    <div class="flex justify-between items-center">
+                                        <span class="text-gray-400">Zero Offset:</span>
+                                        <span id="tpc-control-zero" class="text-xl font-bold text-gray-100">0.00 °C</span>
+                                    </div>
+                                    <div class="flex justify-between items-center">
+                                        <span class="text-gray-400">Span Offset:</span>
+                                        <span id="tpc-control-span" class="text-xl font-bold text-gray-100">0.00 °C</span>
+                                    </div>
+                                    <div class="flex justify-between items-center">
+                                        <span class="text-gray-400">Max Deviation:</span>
+                                        <span id="tpc-control-max-dev" class="text-xl font-bold text-gray-100">0.00 °C</span>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="bg-gray-900 rounded-lg p-6 border border-gray-700">
+                                <h3 class="text-lg font-semibold text-purple-400 mb-4">Recording Probe Offsets</h3>
+                                <div class="space-y-2">
+                                    <div class="flex justify-between items-center">
+                                        <span class="text-gray-400">Zero Offset:</span>
+                                        <span id="tpc-record-zero" class="text-xl font-bold text-gray-100">0.00 °C</span>
+                                    </div>
+                                    <div class="flex justify-between items-center">
+                                        <span class="text-gray-400">Span Offset:</span>
+                                        <span id="tpc-record-span" class="text-xl font-bold text-gray-100">0.00 °C</span>
+                                    </div>
+                                    <div class="flex justify-between items-center">
+                                        <span class="text-gray-400">Max Deviation:</span>
+                                        <span id="tpc-record-max-dev" class="text-xl font-bold text-gray-100">0.00 °C</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="mt-6 bg-gray-900 rounded-lg p-6 border border-gray-700">
+                            <h3 class="text-lg font-semibold text-purple-400 mb-4">Notes</h3>
+                            <div class="space-y-3 text-gray-200 text-sm">
+                                <p>1. Remember to set the zero and span offset values to zero on the machine before starting the calibration.</p>
+                                <p>2. Zero offset is the baseline correction at the lower calibration point; it shifts the temperature reading up or down by a fixed amount.</p>
+                                <p>3. Span offset is the gain correction across the range; it adjusts the slope so high-temperature readings track the reference correctly.</p>
+                                <p>4. Max deviation is the worst overall mismatch from the fitted calibration line across all points; lower values mean better probe accuracy.</p>
+                            </div>
+                            <p id="tpc-unc-summary" class="text-sm text-gray-400 mt-4">Average uncertainty: 0.30 °C</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Menu toggle functionality
+        const menuToggle = document.getElementById('menuToggle');
+        const sideMenu = document.getElementById('sideMenu');
+        const mainContent = document.getElementById('mainContent');
+        const menuOverlay = document.getElementById('menuOverlay');
+        
+        function toggleMenu() {
+            const isMobile = window.innerWidth <= 768;
+            if (isMobile) {
+                // On mobile, use 'open' class to show/hide menu
+                const isOpen = sideMenu.classList.contains('open');
+                if (isOpen) {
+                    sideMenu.classList.remove('open');
+                    menuOverlay.classList.remove('open');
+                } else {
+                    sideMenu.classList.add('open');
+                    menuOverlay.classList.add('open');
+                }
+            } else {
+                // On desktop, use 'closed' class to show/hide menu
+                const isClosed = sideMenu.classList.contains('closed');
+                if (isClosed) {
+                    sideMenu.classList.remove('closed');
+                    mainContent.classList.remove('menu-closed');
+                    menuToggle.classList.remove('menu-closed');
+                } else {
+                    sideMenu.classList.add('closed');
+                    mainContent.classList.add('menu-closed');
+                    menuToggle.classList.add('menu-closed');
+                }
+            }
+        }
+        
+        menuToggle.addEventListener('click', toggleMenu);
+        
+        // Close menu when clicking overlay on mobile
+        menuOverlay.addEventListener('click', function() {
+            if (window.innerWidth <= 768) {
+                sideMenu.classList.remove('open');
+                menuOverlay.classList.remove('open');
+            }
+        });
+        
+        // Tab switching logic
+        function switchTab(button) {
+            document.querySelectorAll('.tab-btn, .side-menu-btn').forEach(b => b.classList.remove('tab-active'));
+            button.classList.add('tab-active');
+            const tab = button.getAttribute('data-tab');
+            document.querySelectorAll('.tool-section').forEach(sec => sec.classList.add('hidden'));
+            document.getElementById(tab).classList.remove('hidden');
+            
+            // Close menu on mobile after selecting a tab
+            if (window.innerWidth <= 768) {
+                sideMenu.classList.remove('open');
+                menuOverlay.classList.remove('open');
+            }
+        }
+        
+        document.querySelectorAll('.tab-btn, .side-menu-btn').forEach(btn => {
+            btn.addEventListener('click', function() {
+                switchTab(this);
+            });
+        });
+        
+        // Handle responsive behavior
+        window.addEventListener('resize', function() {
+            if (window.innerWidth > 768) {
+                // Desktop: remove mobile 'open' class, use 'closed' class logic
+                sideMenu.classList.remove('open');
+                menuOverlay.classList.remove('open');
+                if (sideMenu.classList.contains('closed')) {
+                    // Keep menu closed if user closed it
+                } else {
+                    sideMenu.classList.remove('closed');
+                    mainContent.classList.remove('menu-closed');
+                    menuToggle.classList.remove('menu-closed');
+                }
+            } else {
+                // Mobile: remove desktop 'closed' class, use 'open' class logic
+                sideMenu.classList.remove('closed');
+                mainContent.classList.remove('menu-closed');
+                menuToggle.classList.remove('menu-closed');
+                if (sideMenu.classList.contains('open')) {
+                    menuOverlay.classList.add('open');
+                } else {
+                    menuOverlay.classList.remove('open');
+                }
+            }
+        });
+        
+        // Initialize menu state on page load
+        window.addEventListener('DOMContentLoaded', function() {
+            if (window.innerWidth <= 768) {
+                // On mobile, ensure menu starts closed (no 'open' class)
+                sideMenu.classList.remove('open');
+                menuOverlay.classList.remove('open');
+            }
+        });
+
+        // Pressure Converter Logic
+        (function() {
+            const pressureValue = document.getElementById('pressure-value');
+            const pressureFrom = document.getElementById('pressure-from');
+            const pressureTo = document.getElementById('pressure-to');
+            const pressureResult = document.getElementById('pressure-result');
+            const pressureRate = document.getElementById('pressure-conversion-rate');
+            
+            // Conversion factors to Pascal (base unit)
+            const toPascal = {
+                psi: 6894.76,
+                bar: 100000,
+                kpa: 1000,
+                mpa: 1000000,
+                atm: 101325,
+                torr: 133.322,
+                mmhg: 133.322,
+                inhg: 3386.39,
+                pa: 1
+            };
+            
+            function convertPressure() {
+                const value = parseFloat(pressureValue.value);
+                if (isNaN(value)) {
+                    pressureResult.textContent = '0.00';
+                    return;
+                }
+                
+                const from = pressureFrom.value;
+                const to = pressureTo.value;
+                
+                if (from === to) {
+                    pressureResult.textContent = value.toFixed(2);
+                    pressureRate.textContent = `1 ${from.toUpperCase()} = 1 ${to.toUpperCase()}`;
+                    return;
+                }
+                
+                // Convert to Pascal first, then to target unit
+                const valueInPascal = value * toPascal[from];
+                const result = valueInPascal / toPascal[to];
+                
+                pressureResult.textContent = result.toFixed(6);
+                const rate = toPascal[from] / toPascal[to];
+                pressureRate.textContent = `1 ${from.toUpperCase()} = ${rate.toFixed(6)} ${to.toUpperCase()}`;
+            }
+            
+            pressureValue.addEventListener('input', convertPressure);
+            pressureFrom.addEventListener('change', convertPressure);
+            pressureTo.addEventListener('change', convertPressure);
+            convertPressure();
+        })();
+
+        // Thermocouple Converter Logic
+        (function() {
+            const thermocoupleType = document.getElementById('thermocouple-type');
+            const thermocoupleMv = document.getElementById('thermocouple-mv');
+            const thermocoupleCelsius = document.getElementById('thermocouple-celsius');
+            const thermocoupleFahrenheit = document.getElementById('thermocouple-fahrenheit');
+            
+            let lastEdited = 'mv'; // Track which field was last edited to prevent circular updates
+            
+            // Type K thermocouple polynomial coefficients (mV to °C) - NIST ITS-90
+            // Valid range: -200°C to 1372°C
+            function typeK_mvToC(mv) {
+                if (mv < -5.891 || mv > 54.886) return null; // Out of range
+                
+                if (mv >= -5.891 && mv <= 0) {
+                    // -200°C to 0°C
+                    const c = [
+                        0.0,
+                        2.5173462e1,
+                        -1.1662878,
+                        -1.0833638,
+                        -8.9773540e-1,
+                        -3.7342377e-1,
+                        -8.6632643e-2,
+                        -1.0450598e-2,
+                        -5.1920577e-4
+                    ];
+                    let temp = 0;
+                    for (let i = 0; i < c.length; i++) {
+                        temp += c[i] * Math.pow(mv, i);
+                    }
+                    return temp;
+                } else if (mv > 0 && mv <= 20.644) {
+                    // 0°C to 500°C
+                    const c = [
+                        0.0,
+                        2.508355e1,
+                        7.860106e-2,
+                        -2.503131e-1,
+                        8.315270e-2,
+                        -1.228034e-2,
+                        9.804036e-4,
+                        -4.413030e-5,
+                        1.057734e-6,
+                        -1.052755e-8
+                    ];
+                    let temp = 0;
+                    for (let i = 0; i < c.length; i++) {
+                        temp += c[i] * Math.pow(mv, i);
+                    }
+                    return temp;
+                } else {
+                    // 500°C to 1372°C
+                    const c = [
+                        -1.318058e2,
+                        4.830222e1,
+                        -1.646031,
+                        5.464731e-2,
+                        -9.650715e-4,
+                        8.802193e-6,
+                        -3.110810e-8
+                    ];
+                    let temp = 0;
+                    for (let i = 0; i < c.length; i++) {
+                        temp += c[i] * Math.pow(mv, i);
+                    }
+                    return temp;
+                }
+            }
+            
+            // Type K inverse (Temperature to mV) - Using iterative method
+            function typeK_CToMv(celsius) {
+                if (celsius < -200 || celsius > 1372) return null;
+                
+                // Use Newton-Raphson method to find mV from temperature
+                // We want to find mv such that typeK_mvToC(mv) = celsius
+                // f(mv) = typeK_mvToC(mv) - celsius = 0
+                
+                // Initial guess based on approximate linear relationship
+                let mv = celsius * 0.04; // Rough approximation
+                if (celsius < 0) mv = celsius * 0.03;
+                
+                // Iterate to find solution
+                for (let i = 0; i < 50; i++) {
+                    const temp = typeK_mvToC(mv);
+                    if (temp === null) return null;
+                    
+                    const error = temp - celsius;
+                    if (Math.abs(error) < 0.001) break; // Converged
+                    
+                    // Approximate derivative (finite difference)
+                    const delta = 0.001;
+                    const temp2 = typeK_mvToC(mv + delta);
+                    if (temp2 === null) return null;
+                    const derivative = (temp2 - temp) / delta;
+                    
+                    if (Math.abs(derivative) < 1e-10) return null; // Avoid division by zero
+                    mv = mv - error / derivative;
+                    
+                    // Clamp to valid range
+                    if (mv < -5.891) mv = -5.891;
+                    if (mv > 54.886) mv = 54.886;
+                }
+                
+                return mv;
+            }
+            
+            // Type T thermocouple polynomial coefficients (mV to °C) - NIST ITS-90
+            // Valid range: -200°C to 400°C
+            function typeT_mvToC(mv) {
+                if (mv < -5.603 || mv > 20.872) return null; // Out of range
+                
+                if (mv >= -5.603 && mv <= 0) {
+                    // -200°C to 0°C
+                    const c = [
+                        0.0,
+                        2.592800e1,
+                        -7.602961e-1,
+                        4.637791e-2,
+                        -2.165394e-3,
+                        6.048144e-5,
+                        -7.293422e-7
+                    ];
+                    let temp = 0;
+                    for (let i = 0; i < c.length; i++) {
+                        temp += c[i] * Math.pow(mv, i);
+                    }
+                    return temp;
+                } else {
+                    // 0°C to 400°C
+                    const c = [
+                        0.0,
+                        2.592800e1,
+                        -7.602961e-1,
+                        4.637791e-2,
+                        -2.165394e-3,
+                        6.048144e-5,
+                        -7.293422e-7
+                    ];
+                    let temp = 0;
+                    for (let i = 0; i < c.length; i++) {
+                        temp += c[i] * Math.pow(mv, i);
+                    }
+                    return temp;
+                }
+            }
+            
+            // Type T inverse (Temperature to mV) - Using iterative method
+            function typeT_CToMv(celsius) {
+                if (celsius < -200 || celsius > 400) return null;
+                
+                // Use Newton-Raphson method to find mV from temperature
+                // We want to find mv such that typeT_mvToC(mv) = celsius
+                // f(mv) = typeT_mvToC(mv) - celsius = 0
+                
+                // Initial guess based on approximate linear relationship
+                let mv = celsius * 0.04; // Rough approximation
+                if (celsius < 0) mv = celsius * 0.03;
+                
+                // Iterate to find solution
+                for (let i = 0; i < 50; i++) {
+                    const temp = typeT_mvToC(mv);
+                    if (temp === null) return null;
+                    
+                    const error = temp - celsius;
+                    if (Math.abs(error) < 0.001) break; // Converged
+                    
+                    // Approximate derivative (finite difference)
+                    const delta = 0.001;
+                    const temp2 = typeT_mvToC(mv + delta);
+                    if (temp2 === null) return null;
+                    const derivative = (temp2 - temp) / delta;
+                    
+                    if (Math.abs(derivative) < 1e-10) return null; // Avoid division by zero
+                    mv = mv - error / derivative;
+                    
+                    // Clamp to valid range
+                    if (mv < -5.603) mv = -5.603;
+                    if (mv > 20.872) mv = 20.872;
+                }
+                
+                return mv;
+            }
+            
+            function convertThermocouple() {
+                const type = thermocoupleType.value;
+                let celsius, fahrenheit, mv;
+                
+                if (lastEdited === 'mv') {
+                    // User edited mV, calculate temperature
+                    mv = parseFloat(thermocoupleMv.value);
+                    if (isNaN(mv)) {
+                        thermocoupleCelsius.value = '0.00';
+                        thermocoupleFahrenheit.value = '32.00';
+                        return;
+                    }
+                    
+                    if (type === 'K') {
+                        celsius = typeK_mvToC(mv);
+                    } else if (type === 'T') {
+                        celsius = typeT_mvToC(mv);
+                    }
+                    
+                    if (celsius === null || isNaN(celsius)) {
+                        thermocoupleCelsius.value = '';
+                        thermocoupleFahrenheit.value = '';
+                        return;
+                    }
+                    
+                    fahrenheit = (celsius * 9/5) + 32;
+                    thermocoupleCelsius.value = celsius.toFixed(2);
+                    thermocoupleFahrenheit.value = fahrenheit.toFixed(2);
+                    
+                } else if (lastEdited === 'celsius') {
+                    // User edited Celsius, calculate mV and Fahrenheit
+                    celsius = parseFloat(thermocoupleCelsius.value);
+                    if (isNaN(celsius)) {
+                        thermocoupleMv.value = '0.000';
+                        thermocoupleFahrenheit.value = '32.00';
+                        return;
+                    }
+                    
+                    if (type === 'K') {
+                        mv = typeK_CToMv(celsius);
+                    } else if (type === 'T') {
+                        mv = typeT_CToMv(celsius);
+                    }
+                    
+                    if (mv === null || isNaN(mv)) {
+                        thermocoupleMv.value = '';
+                        thermocoupleFahrenheit.value = '';
+                        return;
+                    }
+                    
+                    fahrenheit = (celsius * 9/5) + 32;
+                    thermocoupleMv.value = mv.toFixed(3);
+                    thermocoupleFahrenheit.value = fahrenheit.toFixed(2);
+                    
+                } else if (lastEdited === 'fahrenheit') {
+                    // User edited Fahrenheit, calculate Celsius and mV
+                    fahrenheit = parseFloat(thermocoupleFahrenheit.value);
+                    if (isNaN(fahrenheit)) {
+                        thermocoupleMv.value = '0.000';
+                        thermocoupleCelsius.value = '0.00';
+                        return;
+                    }
+                    
+                    celsius = (fahrenheit - 32) * 5/9;
+                    
+                    if (type === 'K') {
+                        mv = typeK_CToMv(celsius);
+                    } else if (type === 'T') {
+                        mv = typeT_CToMv(celsius);
+                    }
+                    
+                    if (mv === null || isNaN(mv)) {
+                        thermocoupleMv.value = '';
+                        thermocoupleCelsius.value = '';
+                        return;
+                    }
+                    
+                    thermocoupleCelsius.value = celsius.toFixed(2);
+                    thermocoupleMv.value = mv.toFixed(3);
+                }
+            }
+            
+            // Track which field was last edited
+            thermocoupleMv.addEventListener('focus', () => { lastEdited = 'mv'; });
+            thermocoupleCelsius.addEventListener('focus', () => { lastEdited = 'celsius'; });
+            thermocoupleFahrenheit.addEventListener('focus', () => { lastEdited = 'fahrenheit'; });
+            
+            // Update on input
+            thermocoupleMv.addEventListener('input', convertThermocouple);
+            thermocoupleCelsius.addEventListener('input', convertThermocouple);
+            thermocoupleFahrenheit.addEventListener('input', convertThermocouple);
+            thermocoupleType.addEventListener('change', convertThermocouple);
+            
+            convertThermocouple();
+        })();
+
+        // RTD Converter Logic
+        (function() {
+            const rtdType = document.getElementById('rtd-type');
+            const rtdResistance = document.getElementById('rtd-resistance');
+            const rtdCelsius = document.getElementById('rtd-celsius');
+            const rtdFahrenheit = document.getElementById('rtd-fahrenheit');
+            
+            let lastEdited = 'resistance'; // Track which field was last edited to prevent circular updates
+            
+            // Callendar-Van Dusen equation for PT100/PT1000
+            // R(T) = R0[1 + A*T + B*T² + C*(T-100)*T³] for T < 0°C
+            // R(T) = R0[1 + A*T + B*T²] for T >= 0°C
+            // Where R0 = 100Ω for PT100, 1000Ω for PT1000
+            // A = 3.9083e-3, B = -5.775e-7, C = -4.183e-12 (for T < 0°C)
+            
+            function rtdResistanceToTemp(resistance, rtdType) {
+                const R0 = rtdType === 'PT100' ? 100 : 1000;
+                const A = 3.9083e-3;
+                const B = -5.775e-7;
+                const C = -4.183e-12;
+                
+                // Use iterative method to solve for temperature
+                // For T >= 0: R = R0(1 + A*T + B*T²)
+                // Rearranging: B*T² + A*T + (1 - R/R0) = 0
+                // Quadratic formula: T = [-A ± sqrt(A² - 4*B*(1-R/R0))] / (2*B)
+                
+                const ratio = resistance / R0;
+                
+                if (ratio >= 1) {
+                    // T >= 0°C, use quadratic formula
+                    const discriminant = A * A - 4 * B * (1 - ratio);
+                    if (discriminant < 0) return null;
+                    const temp = (-A + Math.sqrt(discriminant)) / (2 * B);
+                    return temp;
+                } else {
+                    // T < 0°C, use iterative method (Newton-Raphson)
+                    // f(T) = R0[1 + A*T + B*T² + C*(T-100)*T³] - R
+                    // f'(T) = R0[A + 2*B*T + C*(4*T³ - 300*T²)]
+                    let temp = -50; // Initial guess
+                    for (let i = 0; i < 100; i++) {
+                        const T = temp;
+                        const f = R0 * (1 + A*T + B*T*T + C*(T-100)*T*T*T) - resistance;
+                        const df = R0 * (A + 2*B*T + C*(4*T*T*T - 300*T*T));
+                        if (Math.abs(df) < 1e-10) break;
+                        const newTemp = temp - f / df;
+                        if (Math.abs(newTemp - temp) < 0.001) break;
+                        temp = newTemp;
+                        if (temp < -200 || temp > 850) return null; // Out of valid range
+                    }
+                    return temp;
+                }
+            }
+            
+            // Inverse function: Temperature to Resistance using Callendar-Van Dusen equation
+            function rtdTempToResistance(celsius, rtdType) {
+                if (celsius < -200 || celsius > 850) return null;
+                
+                const R0 = rtdType === 'PT100' ? 100 : 1000;
+                const A = 3.9083e-3;
+                const B = -5.775e-7;
+                const C = -4.183e-12;
+                
+                let resistance;
+                if (celsius >= 0) {
+                    // For T >= 0°C: R(T) = R0[1 + A*T + B*T²]
+                    resistance = R0 * (1 + A * celsius + B * celsius * celsius);
+                } else {
+                    // For T < 0°C: R(T) = R0[1 + A*T + B*T² + C*(T-100)*T³]
+                    resistance = R0 * (1 + A * celsius + B * celsius * celsius + C * (celsius - 100) * celsius * celsius * celsius);
+                }
+                
+                return resistance;
+            }
+            
+            function convertRTD() {
+                const type = rtdType.value;
+                let celsius, fahrenheit, resistance;
+                
+                if (lastEdited === 'resistance') {
+                    // User edited resistance, calculate temperature
+                    resistance = parseFloat(rtdResistance.value);
+                    if (isNaN(resistance)) {
+                        rtdCelsius.value = '0.00';
+                        rtdFahrenheit.value = '32.00';
+                        return;
+                    }
+                    
+                    celsius = rtdResistanceToTemp(resistance, type);
+                    
+                    if (celsius === null || isNaN(celsius) || celsius < -200 || celsius > 850) {
+                        rtdCelsius.value = '';
+                        rtdFahrenheit.value = '';
+                        return;
+                    }
+                    
+                    fahrenheit = (celsius * 9/5) + 32;
+                    rtdCelsius.value = celsius.toFixed(2);
+                    rtdFahrenheit.value = fahrenheit.toFixed(2);
+                    
+                } else if (lastEdited === 'celsius') {
+                    // User edited Celsius, calculate resistance and Fahrenheit
+                    celsius = parseFloat(rtdCelsius.value);
+                    if (isNaN(celsius)) {
+                        rtdResistance.value = type === 'PT100' ? '100.00' : '1000.00';
+                        rtdFahrenheit.value = '32.00';
+                        return;
+                    }
+                    
+                    if (celsius < -200 || celsius > 850) {
+                        rtdResistance.value = '';
+                        rtdFahrenheit.value = '';
+                        return;
+                    }
+                    
+                    resistance = rtdTempToResistance(celsius, type);
+                    
+                    if (resistance === null || isNaN(resistance)) {
+                        rtdResistance.value = '';
+                        rtdFahrenheit.value = '';
+                        return;
+                    }
+                    
+                    fahrenheit = (celsius * 9/5) + 32;
+                    rtdResistance.value = resistance.toFixed(2);
+                    rtdFahrenheit.value = fahrenheit.toFixed(2);
+                    
+                } else if (lastEdited === 'fahrenheit') {
+                    // User edited Fahrenheit, calculate Celsius and resistance
+                    fahrenheit = parseFloat(rtdFahrenheit.value);
+                    if (isNaN(fahrenheit)) {
+                        rtdResistance.value = type === 'PT100' ? '100.00' : '1000.00';
+                        rtdCelsius.value = '0.00';
+                        return;
+                    }
+                    
+                    celsius = (fahrenheit - 32) * 5/9;
+                    
+                    if (celsius < -200 || celsius > 850) {
+                        rtdResistance.value = '';
+                        rtdCelsius.value = '';
+                        return;
+                    }
+                    
+                    resistance = rtdTempToResistance(celsius, type);
+                    
+                    if (resistance === null || isNaN(resistance)) {
+                        rtdResistance.value = '';
+                        rtdCelsius.value = '';
+                        return;
+                    }
+                    
+                    rtdCelsius.value = celsius.toFixed(2);
+                    rtdResistance.value = resistance.toFixed(2);
+                }
+            }
+            
+            // Track which field was last edited
+            rtdResistance.addEventListener('focus', () => { lastEdited = 'resistance'; });
+            rtdCelsius.addEventListener('focus', () => { lastEdited = 'celsius'; });
+            rtdFahrenheit.addEventListener('focus', () => { lastEdited = 'fahrenheit'; });
+            
+            // Update on input
+            rtdResistance.addEventListener('input', convertRTD);
+            rtdCelsius.addEventListener('input', convertRTD);
+            rtdFahrenheit.addEventListener('input', convertRTD);
+            rtdType.addEventListener('change', convertRTD);
+            
+            convertRTD();
+        })();
+
+        // Steam Converter Logic
+        (function() {
+            const steamPressure = document.getElementById('steam-pressure');
+            const steamPressureUnit = document.getElementById('steam-pressure-unit');
+            const steamCelsius = document.getElementById('steam-celsius');
+            const steamFahrenheit = document.getElementById('steam-fahrenheit');
+            
+            let lastEdited = 'pressure'; // Track which field was last edited to prevent circular updates
+            
+            // Convert pressure to absolute bar
+            function toBarAbs(pressure, unit) {
+                switch(unit) {
+                    case 'bar-abs':
+                        return pressure;
+                    case 'bar-g':
+                        return pressure + 1.01325; // Add atmospheric pressure
+                    case 'kpa-abs':
+                        return pressure / 100; // Convert kPa to bar
+                    case 'kpa-g':
+                        return (pressure + 101.325) / 100; // Add atmospheric pressure and convert
+                    default:
+                        return pressure;
+                }
+            }
+            
+            // Convert from absolute bar to selected unit
+            function fromBarAbs(barAbs, unit) {
+                switch(unit) {
+                    case 'bar-abs':
+                        return barAbs;
+                    case 'bar-g':
+                        return barAbs - 1.01325; // Subtract atmospheric pressure
+                    case 'kpa-abs':
+                        return barAbs * 100; // Convert bar to kPa
+                    case 'kpa-g':
+                        return barAbs * 100 - 101.325; // Convert and subtract atmospheric pressure
+                    default:
+                        return barAbs;
+                }
+            }
+            
+            // Saturated steam temperature from pressure (using Antoine equation)
+            // For water/steam: log10(P) = A - B/(T + C)
+            // Where P is in bar, T is in °C
+            // Rearranging: T = B/(A - log10(P)) - C
+            // Constants for water: A = 5.19625, B = 1730.63, C = 233.426
+            function steamPressureToTemp(barAbs) {
+                if (barAbs <= 0) return null;
+                
+                // Use Antoine equation for accurate steam table relationship
+                const A = 5.19625;
+                const B = 1730.63;
+                const C = 233.426;
+                
+                const logP = Math.log10(barAbs);
+                if (logP >= A) return null; // Pressure too high
+                
+                const celsius = B / (A - logP) - C;
+                
+                // Valid range for steam tables: approximately 0.01 bar to 220 bar
+                // Temperature range: approximately 7°C to 374°C
+                if (celsius < 0 || celsius > 374) return null;
+                
+                return celsius;
+            }
+            
+            // Inverse: Saturated steam pressure from temperature (using Antoine equation)
+            // log10(P) = A - B/(T + C)
+            // P = 10^(A - B/(T + C))
+            function steamTempToPressure(celsius) {
+                if (celsius < 0 || celsius > 374) return null;
+                
+                const A = 5.19625;
+                const B = 1730.63;
+                const C = 233.426;
+                
+                const logP = A - B / (celsius + C);
+                const barAbs = Math.pow(10, logP);
+                
+                if (barAbs <= 0) return null;
+                
+                return barAbs;
+            }
+            
+            function convertSteam() {
+                const unit = steamPressureUnit.value;
+                let celsius, fahrenheit, pressure, barAbs;
+                
+                if (lastEdited === 'pressure') {
+                    // User edited pressure, calculate temperature
+                    pressure = parseFloat(steamPressure.value);
+                    if (isNaN(pressure) || pressure <= 0) {
+                        steamCelsius.value = '100.00';
+                        steamFahrenheit.value = '212.00';
+                        return;
+                    }
+                    
+                    barAbs = toBarAbs(pressure, unit);
+                    
+                    if (barAbs <= 0) {
+                        steamCelsius.value = '';
+                        steamFahrenheit.value = '';
+                        return;
+                    }
+                    
+                    celsius = steamPressureToTemp(barAbs);
+                    
+                    if (celsius === null || isNaN(celsius)) {
+                        steamCelsius.value = '';
+                        steamFahrenheit.value = '';
+                        return;
+                    }
+                    
+                    fahrenheit = (celsius * 9/5) + 32;
+                    steamCelsius.value = celsius.toFixed(2);
+                    steamFahrenheit.value = fahrenheit.toFixed(2);
+                    
+                } else if (lastEdited === 'celsius') {
+                    // User edited Celsius, calculate pressure and Fahrenheit
+                    celsius = parseFloat(steamCelsius.value);
+                    if (isNaN(celsius)) {
+                        steamPressure.value = '1.000';
+                        steamFahrenheit.value = '212.00';
+                        return;
+                    }
+                    
+                    if (celsius < 0 || celsius > 374) {
+                        steamPressure.value = '';
+                        steamFahrenheit.value = '';
+                        return;
+                    }
+                    
+                    barAbs = steamTempToPressure(celsius);
+                    
+                    if (barAbs === null || isNaN(barAbs)) {
+                        steamPressure.value = '';
+                        steamFahrenheit.value = '';
+                        return;
+                    }
+                    
+                    pressure = fromBarAbs(barAbs, unit);
+                    fahrenheit = (celsius * 9/5) + 32;
+                    
+                    steamPressure.value = pressure.toFixed(3);
+                    steamFahrenheit.value = fahrenheit.toFixed(2);
+                    
+                } else if (lastEdited === 'fahrenheit') {
+                    // User edited Fahrenheit, calculate Celsius and pressure
+                    fahrenheit = parseFloat(steamFahrenheit.value);
+                    if (isNaN(fahrenheit)) {
+                        steamPressure.value = '1.000';
+                        steamCelsius.value = '100.00';
+                        return;
+                    }
+                    
+                    celsius = (fahrenheit - 32) * 5/9;
+                    
+                    if (celsius < 0 || celsius > 374) {
+                        steamPressure.value = '';
+                        steamCelsius.value = '';
+                        return;
+                    }
+                    
+                    barAbs = steamTempToPressure(celsius);
+                    
+                    if (barAbs === null || isNaN(barAbs)) {
+                        steamPressure.value = '';
+                        steamCelsius.value = '';
+                        return;
+                    }
+                    
+                    pressure = fromBarAbs(barAbs, unit);
+                    steamCelsius.value = celsius.toFixed(2);
+                    steamPressure.value = pressure.toFixed(3);
+                }
+            }
+            
+            // Track which field was last edited
+            steamPressure.addEventListener('focus', () => { lastEdited = 'pressure'; });
+            steamCelsius.addEventListener('focus', () => { lastEdited = 'celsius'; });
+            steamFahrenheit.addEventListener('focus', () => { lastEdited = 'fahrenheit'; });
+            
+            // Update on input
+            steamPressure.addEventListener('input', convertSteam);
+            steamCelsius.addEventListener('input', convertSteam);
+            steamFahrenheit.addEventListener('input', convertSteam);
+            steamPressureUnit.addEventListener('change', convertSteam);
+            
+            // Update common conversions
+            function updateCommonConversions() {
+                // 134.5°C
+                const barAbs134 = steamTempToPressure(134.5);
+                const kpaAbs134 = barAbs134 !== null ? barAbs134 * 100 : null;
+                if (barAbs134 !== null) {
+                    document.getElementById('steam-common-134-bar').textContent = barAbs134.toFixed(3);
+                    document.getElementById('steam-common-134-kpa').textContent = kpaAbs134.toFixed(1);
+                }
+                
+                // 121°C
+                const barAbs121 = steamTempToPressure(121);
+                const kpaAbs121 = barAbs121 !== null ? barAbs121 * 100 : null;
+                if (barAbs121 !== null) {
+                    document.getElementById('steam-common-121-bar').textContent = barAbs121.toFixed(3);
+                    document.getElementById('steam-common-121-kpa').textContent = kpaAbs121.toFixed(1);
+                }
+            }
+            
+            convertSteam();
+            updateCommonConversions();
+        })();
+
+        // A0 Calculator Logic
+        (function() {
+            const temperatureInput = document.getElementById('a0-temperature');
+            const a0ValueInput = document.getElementById('a0-value');
+            const timeSecondsInput = document.getElementById('a0-time-seconds');
+            const timeMinutesInput = document.getElementById('a0-time-minutes');
+            const factorDisplay = document.getElementById('a0-factor-display');
+
+            let lastEdited = 'a0';
+
+            function getFactor(temperature) {
+                return Math.pow(10, (temperature - 80) / 10);
+            }
+
+            function setAllBlank() {
+                a0ValueInput.value = '';
+                timeSecondsInput.value = '';
+                timeMinutesInput.value = '';
+            }
+
+            function convertA0() {
+                const temperature = parseFloat(temperatureInput.value);
+                if (isNaN(temperature)) {
+                    factorDisplay.textContent = 'Temperature factor: -';
+                    setAllBlank();
+                    return;
+                }
+
+                const factor = getFactor(temperature);
+                factorDisplay.textContent = `Temperature factor: ${factor.toFixed(6)}`;
+
+                if (!isFinite(factor) || factor <= 0) {
+                    setAllBlank();
+                    return;
+                }
+
+                if (lastEdited === 'seconds') {
+                    const seconds = parseFloat(timeSecondsInput.value);
+                    if (isNaN(seconds) || seconds < 0) {
+                        setAllBlank();
+                        return;
+                    }
+                    const minutes = seconds / 60;
+                    const a0 = seconds * factor;
+                    timeMinutesInput.value = minutes.toFixed(4);
+                    a0ValueInput.value = a0.toFixed(4);
+                } else if (lastEdited === 'minutes') {
+                    const minutes = parseFloat(timeMinutesInput.value);
+                    if (isNaN(minutes) || minutes < 0) {
+                        setAllBlank();
+                        return;
+                    }
+                    const seconds = minutes * 60;
+                    const a0 = seconds * factor;
+                    timeSecondsInput.value = seconds.toFixed(4);
+                    a0ValueInput.value = a0.toFixed(4);
+                } else {
+                    const a0 = parseFloat(a0ValueInput.value);
+                    if (isNaN(a0) || a0 < 0) {
+                        setAllBlank();
+                        return;
+                    }
+                    const seconds = a0 / factor;
+                    const minutes = seconds / 60;
+                    timeSecondsInput.value = seconds.toFixed(4);
+                    timeMinutesInput.value = minutes.toFixed(4);
+                }
+            }
+
+            timeSecondsInput.addEventListener('focus', () => { lastEdited = 'seconds'; });
+            timeMinutesInput.addEventListener('focus', () => { lastEdited = 'minutes'; });
+            a0ValueInput.addEventListener('focus', () => { lastEdited = 'a0'; });
+
+            timeSecondsInput.addEventListener('input', () => {
+                lastEdited = 'seconds';
+                convertA0();
+            });
+            timeMinutesInput.addEventListener('input', () => {
+                lastEdited = 'minutes';
+                convertA0();
+            });
+            a0ValueInput.addEventListener('input', () => {
+                lastEdited = 'a0';
+                convertA0();
+            });
+            temperatureInput.addEventListener('input', convertA0);
+
+            convertA0();
+        })();
+
+        // Temp Probe Calibration Logic
+        (function() {
+            const refInputs = [
+                document.getElementById('tpc-ref-1'),
+                document.getElementById('tpc-ref-2'),
+                document.getElementById('tpc-ref-3')
+            ];
+            const controlInputs = [
+                document.getElementById('tpc-control-1'),
+                document.getElementById('tpc-control-2'),
+                document.getElementById('tpc-control-3')
+            ];
+            const recordInputs = [
+                document.getElementById('tpc-record-1'),
+                document.getElementById('tpc-record-2'),
+                document.getElementById('tpc-record-3')
+            ];
+            const uncertaintyInputs = [
+                document.getElementById('tpc-unc-1'),
+                document.getElementById('tpc-unc-2'),
+                document.getElementById('tpc-unc-3')
+            ];
+
+            const controlZeroEl = document.getElementById('tpc-control-zero');
+            const controlSpanEl = document.getElementById('tpc-control-span');
+            const controlMaxDevEl = document.getElementById('tpc-control-max-dev');
+            const recordZeroEl = document.getElementById('tpc-record-zero');
+            const recordSpanEl = document.getElementById('tpc-record-span');
+            const recordMaxDevEl = document.getElementById('tpc-record-max-dev');
+            const uncertaintySummaryEl = document.getElementById('tpc-unc-summary');
+
+            function linearRegression(xVals, yVals) {
+                const n = xVals.length;
+                if (n < 2) return null;
+
+                const xMean = xVals.reduce((sum, x) => sum + x, 0) / n;
+                const yMean = yVals.reduce((sum, y) => sum + y, 0) / n;
+
+                let covXY = 0;
+                let varX = 0;
+                for (let i = 0; i < n; i++) {
+                    const dx = xVals[i] - xMean;
+                    covXY += dx * (yVals[i] - yMean);
+                    varX += dx * dx;
+                }
+
+                if (Math.abs(varX) < 1e-12) return null;
+
+                const b = covXY / varX;
+                const a = yMean - b * xMean;
+                return { a, b };
+            }
+
+            function setInvalidOutputs() {
+                controlZeroEl.textContent = '-';
+                controlSpanEl.textContent = '-';
+                controlMaxDevEl.textContent = '-';
+                recordZeroEl.textContent = '-';
+                recordSpanEl.textContent = '-';
+                recordMaxDevEl.textContent = '-';
+            }
+
+            function maxDeviation(xVals, yVals, fit) {
+                let sumSquaredError = 0;
+                for (let i = 0; i < xVals.length; i++) {
+                    const predicted = fit.a + fit.b * xVals[i];
+                    const error = yVals[i] - predicted;
+                    sumSquaredError += error * error;
+                }
+                return Math.sqrt(sumSquaredError);
+            }
+
+            function updateCalibration() {
+                const refs = refInputs.map(input => parseFloat(input.value));
+                const controls = controlInputs.map(input => parseFloat(input.value));
+                const records = recordInputs.map(input => parseFloat(input.value));
+                const uncertainties = uncertaintyInputs
+                    .map(input => parseFloat(input.value))
+                    .filter(v => !isNaN(v) && v >= 0);
+
+                const allValid = refs.every(v => !isNaN(v)) &&
+                    controls.every(v => !isNaN(v)) &&
+                    records.every(v => !isNaN(v));
+
+                if (!allValid) {
+                    setInvalidOutputs();
+                } else {
+                    const controlFit = linearRegression(refs, controls);
+                    const recordFit = linearRegression(refs, records);
+
+                    if (!controlFit || !recordFit || !isFinite(controlFit.a) || !isFinite(controlFit.b) || !isFinite(recordFit.a) || !isFinite(recordFit.b)) {
+                        setInvalidOutputs();
+                    } else {
+                        // Workbook mapping:
+                        // ZERO = -a
+                        // SPAN = -100 * (b - 1)
+                        const controlZero = -controlFit.a;
+                        const controlSpan = -100 * (controlFit.b - 1);
+                        const recordZero = -recordFit.a;
+                        const recordSpan = -100 * (recordFit.b - 1);
+                        const controlMaxDeviation = maxDeviation(refs, controls, controlFit);
+                        const recordMaxDeviation = maxDeviation(refs, records, recordFit);
+
+                        controlZeroEl.textContent = `${controlZero.toFixed(2)} °C`;
+                        controlSpanEl.textContent = `${controlSpan.toFixed(2)} °C`;
+                        controlMaxDevEl.textContent = `${controlMaxDeviation.toFixed(2)} °C`;
+                        recordZeroEl.textContent = `${recordZero.toFixed(2)} °C`;
+                        recordSpanEl.textContent = `${recordSpan.toFixed(2)} °C`;
+                        recordMaxDevEl.textContent = `${recordMaxDeviation.toFixed(2)} °C`;
+                    }
+                }
+
+                if (uncertainties.length === 0) {
+                    uncertaintySummaryEl.textContent = 'Average uncertainty: -';
+                } else {
+                    const avgUncertainty = uncertainties.reduce((sum, v) => sum + v, 0) / uncertainties.length;
+                    uncertaintySummaryEl.textContent = `Average uncertainty: ${avgUncertainty.toFixed(2)} °C`;
+                }
+            }
+
+            [...refInputs, ...controlInputs, ...recordInputs, ...uncertaintyInputs].forEach(input => {
+                input.addEventListener('input', updateCalibration);
+            });
+
+            updateCalibration();
+        })();
+    </script>
+
+    <!-- Footer/Disclaimer -->
+    <div class="text-center text-xs text-gray-400 mt-8">
+        <p>In Vitro Technicians Tool Kit &copy; 2026. For educational and informational purposes only.</p>
+    </div>
+</body>
+</html>
+
+
+
