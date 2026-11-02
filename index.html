@@ -838,7 +838,7 @@
                         <p class="text-sm text-gray-400 mb-6">Enter any one power value. The others follow the voltage, supply, and power factor.</p>
                         <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
                             <div class="space-y-2">
-                                <label class="block text-sm font-medium text-gray-400">Real power (kW)</label>
+                                <label id="power-kw-label" class="block text-sm font-medium text-gray-400">Real power (kW)</label>
                                 <input type="number" id="power-kw" value="5.000" step="any" class="input-highlight w-full bg-gray-900 border border-gray-700 rounded-md py-3 px-4 text-lg text-gray-100 focus:outline-none focus:ring-2 focus:ring-purple-400 focus:border-purple-400" placeholder="0.000">
                             </div>
                             <div class="space-y-2">
@@ -846,7 +846,7 @@
                                 <input type="number" id="power-amps" step="any" class="input-highlight w-full bg-gray-900 border border-gray-700 rounded-md py-3 px-4 text-lg text-gray-100 focus:outline-none focus:ring-2 focus:ring-purple-400 focus:border-purple-400" placeholder="0.00">
                             </div>
                             <div class="space-y-2">
-                                <label class="block text-sm font-medium text-gray-400">Apparent power (kVA)</label>
+                                <label id="power-kva-label" class="block text-sm font-medium text-gray-400">Apparent power (kVA)</label>
                                 <input type="number" id="power-kva" step="any" class="input-highlight w-full bg-gray-900 border border-gray-700 rounded-md py-3 px-4 text-lg text-gray-100 focus:outline-none focus:ring-2 focus:ring-purple-400 focus:border-purple-400" placeholder="0.000">
                             </div>
                             <div class="space-y-2">
@@ -856,10 +856,6 @@
                             <div class="space-y-2">
                                 <label class="block text-sm font-medium text-gray-400">Horsepower (745.7 W)</label>
                                 <input type="number" id="power-hp" step="any" class="input-highlight w-full bg-gray-900 border border-gray-700 rounded-md py-3 px-4 text-lg text-gray-100 focus:outline-none focus:ring-2 focus:ring-purple-400 focus:border-purple-400" placeholder="0.000">
-                            </div>
-                            <div class="space-y-2">
-                                <label class="block text-sm font-medium text-gray-400">Heat equivalent (BTU/h)</label>
-                                <input type="number" id="power-btu" step="any" class="input-highlight w-full bg-gray-900 border border-gray-700 rounded-md py-3 px-4 text-lg text-gray-100 focus:outline-none focus:ring-2 focus:ring-purple-400 focus:border-purple-400" placeholder="0.0">
                             </div>
                         </div>
                         <p id="power-message" class="text-sm text-amber-300 mt-4 hidden"></p>
@@ -880,10 +876,10 @@
                             <div class="space-y-3 text-gray-200 text-sm">
                                 <p>1. Single phase: kW = V × I × PF / 1000. Current is I = (kW × 1000) / (V × PF).</p>
                                 <p>2. Three phase: kW = √3 × V × I × PF / 1000. V is the line-to-line voltage, and I is the line current.</p>
-                                <p>3. DC: kW = V × I / 1000. Power factor is not used, so kVA matches kW and kVAR is zero.</p>
+                                <p>3. DC: W = V × I. Power factor is not used, so apparent power matches real power in watts and kVAR is zero.</p>
                                 <p>4. kVA = kW / PF. kVAR = √(kVA² − kW²), shown as a magnitude for a lagging power factor.</p>
                                 <p>5. Use a power factor of 1.0 for heaters and other resistive loads. Motors are often about 0.8 to 0.9.</p>
-                                <p>6. Horsepower is the electrical equivalent of the real power, using 745.7 W per hp. BTU/h is the heat equivalent, using 3412.14 BTU/h per kW.</p>
+                                <p>6. Horsepower is the electrical equivalent of the real power, using 745.7 W per hp.</p>
                             </div>
                         </div>
                     </div>
@@ -892,7 +888,7 @@
 
             <footer class="text-center text-xs text-gray-400 mt-8 mb-6">
                 <p>In Vitro Technicians Tool Kit &copy; 2026. For educational and informational purposes only.</p>
-                <p class="mt-1 text-gray-500">2026.11.2.1</p>
+                <p class="mt-1 text-gray-500">v2026.11.2.2</p>
             </footer>
             </div>
         </div>
@@ -1938,9 +1934,10 @@
                 amps: document.getElementById('power-amps'),
                 kva: document.getElementById('power-kva'),
                 kvar: document.getElementById('power-kvar'),
-                hp: document.getElementById('power-hp'),
-                btu: document.getElementById('power-btu')
+                hp: document.getElementById('power-hp')
             };
+            const kwLabel = document.getElementById('power-kw-label');
+            const kvaLabel = document.getElementById('power-kva-label');
             const resultEl = document.getElementById('power-result');
             const summaryEl = document.getElementById('power-summary');
             const formulaEl = document.getElementById('power-formula');
@@ -1948,9 +1945,27 @@
             const presets = document.querySelectorAll('.power-preset');
 
             const WATTS_PER_HP = 745.7;
-            const BTU_PER_KW = 3412.14;
-            const digits = { kw: 3, amps: 2, kva: 3, kvar: 3, hp: 3, btu: 1 };
+            const digits = { kw: 3, amps: 2, kva: 3, kvar: 3, hp: 3 };
             let lastEdited = 'kw';
+            let wattsMode = false;
+
+            function setPowerUnits(dc) {
+                kwLabel.textContent = dc ? 'Real power (W)' : 'Real power (kW)';
+                kvaLabel.textContent = dc ? 'Apparent power (W)' : 'Apparent power (kVA)';
+                fields.kw.placeholder = dc ? '0.0' : '0.000';
+                fields.kva.placeholder = dc ? '0.0' : '0.000';
+                if (dc === wattsMode) return;
+                ['kw', 'kva'].forEach(key => {
+                    const raw = parseFloat(fields[key].value);
+                    if (isNaN(raw)) return;
+                    fields[key].value = dc ? (raw * 1000).toFixed(1) : (raw / 1000).toFixed(3);
+                });
+                wattsMode = dc;
+            }
+
+            function shownPowerToKw(raw, dc) {
+                return dc ? raw / 1000 : raw;
+            }
 
             function phaseFactor(phase) {
                 return phase === 'three' ? Math.sqrt(3) : 1;
@@ -1987,20 +2002,19 @@
                     amps: amps,
                     kva: kva,
                     kvar: kvar,
-                    hp: (kw * 1000) / WATTS_PER_HP,
-                    btu: kw * BTU_PER_KW
+                    hp: (kw * 1000) / WATTS_PER_HP
                 };
             }
 
             function kwFromEdited(supply) {
                 const raw = parseFloat(fields[lastEdited].value);
                 if (isNaN(raw)) return { ok: false, reason: 'empty' };
+                const dc = supply.phase === 'dc';
                 const factor = phaseFactor(supply.phase);
-                if (lastEdited === 'kw') return { ok: true, kw: raw };
+                if (lastEdited === 'kw') return { ok: true, kw: shownPowerToKw(raw, dc) };
                 if (lastEdited === 'amps') return { ok: true, kw: (factor * supply.voltage * raw * supply.pf) / 1000 };
-                if (lastEdited === 'kva') return { ok: true, kw: raw * supply.pf };
+                if (lastEdited === 'kva') return { ok: true, kw: shownPowerToKw(raw, dc) * supply.pf };
                 if (lastEdited === 'hp') return { ok: true, kw: (raw * WATTS_PER_HP) / 1000 };
-                if (lastEdited === 'btu') return { ok: true, kw: raw / BTU_PER_KW };
                 if (supply.pf >= 0.999999) return { ok: false, reason: 'kvar-unity' };
                 const tanTheta = Math.sqrt(1 - (supply.pf * supply.pf)) / supply.pf;
                 return { ok: true, kw: Math.abs(raw) / tanTheta };
@@ -2008,7 +2022,7 @@
 
             function formulaText(phase) {
                 if (phase === 'three') return 'I = (kW × 1000) / (√3 × V × PF)';
-                if (phase === 'dc') return 'I = (kW × 1000) / V';
+                if (phase === 'dc') return 'I = W / V';
                 return 'I = (kW × 1000) / (V × PF)';
             }
 
@@ -2022,11 +2036,17 @@
                 });
             }
 
+            function formatField(key, value, dc) {
+                if (dc && (key === 'kw' || key === 'kva')) return (value * 1000).toFixed(1);
+                return value.toFixed(digits[key]);
+            }
+
             function convert() {
                 const dc = phaseEl.value === 'dc';
                 pfEl.disabled = dc;
                 pfEl.classList.toggle('opacity-50', dc);
                 if (dc) pfEl.value = '1';
+                setPowerUnits(dc);
 
                 const supply = readSupply();
                 updatePresetStyles(supply.phase, supply.voltage);
@@ -2044,14 +2064,14 @@
 
                 let solved = kwFromEdited(supply);
                 if (!solved.ok && solved.reason === 'kvar-unity') {
-                    const kw = parseFloat(fields.kw.value);
-                    if (isNaN(kw)) {
-                        setMessage('Reactive power is zero at a power factor of 1. Enter kW, amps, or kVA instead.');
+                    const shown = parseFloat(fields.kw.value);
+                    if (isNaN(shown)) {
+                        setMessage('Reactive power is zero at a power factor of 1. Enter real power, amps, or apparent power instead.');
                         fields.kvar.value = '0.000';
                         return;
                     }
                     lastEdited = 'kw';
-                    solved = { ok: true, kw: kw };
+                    solved = { ok: true, kw: shownPowerToKw(shown, dc) };
                     setMessage('Reactive power is zero at a power factor of 1.');
                 } else if (!solved.ok) {
                     setMessage('');
@@ -2070,12 +2090,12 @@
 
                 Object.keys(fields).forEach(key => {
                     if (key === lastEdited) return;
-                    fields[key].value = values[key].toFixed(digits[key]);
+                    fields[key].value = formatField(key, values[key], dc);
                 });
 
                 resultEl.textContent = values.amps.toFixed(2) + ' A';
                 summaryEl.textContent = supply.phase === 'dc'
-                    ? values.kw.toFixed(3) + ' kW at ' + supply.voltage + ' V DC'
+                    ? (values.kw * 1000).toFixed(1) + ' W at ' + supply.voltage + ' V DC'
                     : values.kw.toFixed(3) + ' kW at ' + supply.voltage + ' V, ' + (supply.phase === 'three' ? 'three phase' : 'single phase') + ', PF ' + supply.pf.toFixed(2);
                 formulaEl.textContent = formulaText(supply.phase);
             }
