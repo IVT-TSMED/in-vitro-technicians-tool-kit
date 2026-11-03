@@ -4,6 +4,13 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>In Vitro Technicians Tool Kit</title>
+    <meta name="theme-color" content="#232526">
+    <meta name="mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-title" content="IVT Tool Kit">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <link rel="manifest" href="manifest.json">
+    <link rel="apple-touch-icon" href="icon-192.png">
     <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🔬</text></svg>" type="image/svg+xml">
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
@@ -82,6 +89,16 @@
         
         .menu-toggle.menu-closed {
             left: 20px;
+        }
+
+        #install-app {
+            display: none;
+            align-items: center;
+            margin-top: 1.25rem;
+        }
+
+        #install-app.install-ready {
+            display: inline-flex;
         }
         
         .menu-toggle:hover {
@@ -202,6 +219,9 @@
                 </div>
                 <h1 class="text-4xl font-bold text-gray-100 mb-2">In Vitro Technicians Tool Kit</h1>
                 <p class="text-gray-400">Essential conversion tools for In Vitro technicians</p>
+                <button id="install-app" type="button" class="px-4 py-2 rounded-md text-sm font-medium text-white gradient-bg">
+                    <i class="fas fa-download mr-2"></i>Install app
+                </button>
             </header>
 
             <!-- Pressure Converter Section -->
@@ -857,6 +877,10 @@
                                 <label class="block text-sm font-medium text-gray-400">Horsepower (745.7 W)</label>
                                 <input type="number" id="power-hp" step="any" class="input-highlight w-full bg-gray-900 border border-gray-700 rounded-md py-3 px-4 text-lg text-gray-100 focus:outline-none focus:ring-2 focus:ring-purple-400 focus:border-purple-400" placeholder="0.000">
                             </div>
+                            <div class="space-y-2">
+                                <label class="block text-sm font-medium text-gray-400">Heat equivalent (BTU/h)</label>
+                                <input type="number" id="power-btu" step="any" class="input-highlight w-full bg-gray-900 border border-gray-700 rounded-md py-3 px-4 text-lg text-gray-100 focus:outline-none focus:ring-2 focus:ring-purple-400 focus:border-purple-400" placeholder="0.0">
+                            </div>
                         </div>
                         <p id="power-message" class="text-sm text-amber-300 mt-4 hidden"></p>
                         <div class="mt-8 bg-gray-900 rounded-lg p-6 border border-gray-700">
@@ -879,7 +903,7 @@
                                 <p>3. DC: W = V × I. Power factor is not used, so apparent power matches real power in watts and kVAR is zero.</p>
                                 <p>4. kVA = kW / PF. kVAR = √(kVA² − kW²), shown as a magnitude for a lagging power factor.</p>
                                 <p>5. Use a power factor of 1.0 for heaters and other resistive loads. Motors are often about 0.8 to 0.9.</p>
-                                <p>6. Horsepower is the electrical equivalent of the real power, using 745.7 W per hp.</p>
+                                <p>6. Horsepower is the electrical equivalent of the real power, using 745.7 W per hp. BTU/h is the heat equivalent, using 3412.14 BTU/h per kW.</p>
                             </div>
                         </div>
                     </div>
@@ -888,7 +912,7 @@
 
             <footer class="text-center text-xs text-gray-400 mt-8 mb-6">
                 <p>In Vitro Technicians Tool Kit &copy; 2026. For educational and informational purposes only.</p>
-                <p class="mt-1 text-gray-500">v2026.11.2.2</p>
+                <p class="mt-1 text-gray-500">v2026.11.3.1</p>
             </footer>
             </div>
         </div>
@@ -1934,7 +1958,8 @@
                 amps: document.getElementById('power-amps'),
                 kva: document.getElementById('power-kva'),
                 kvar: document.getElementById('power-kvar'),
-                hp: document.getElementById('power-hp')
+                hp: document.getElementById('power-hp'),
+                btu: document.getElementById('power-btu')
             };
             const kwLabel = document.getElementById('power-kw-label');
             const kvaLabel = document.getElementById('power-kva-label');
@@ -1945,7 +1970,8 @@
             const presets = document.querySelectorAll('.power-preset');
 
             const WATTS_PER_HP = 745.7;
-            const digits = { kw: 3, amps: 2, kva: 3, kvar: 3, hp: 3 };
+            const BTU_PER_KW = 3412.14;
+            const digits = { kw: 3, amps: 2, kva: 3, kvar: 3, hp: 3, btu: 1 };
             let lastEdited = 'kw';
             let wattsMode = false;
 
@@ -2002,7 +2028,8 @@
                     amps: amps,
                     kva: kva,
                     kvar: kvar,
-                    hp: (kw * 1000) / WATTS_PER_HP
+                    hp: (kw * 1000) / WATTS_PER_HP,
+                    btu: kw * BTU_PER_KW
                 };
             }
 
@@ -2015,6 +2042,7 @@
                 if (lastEdited === 'amps') return { ok: true, kw: (factor * supply.voltage * raw * supply.pf) / 1000 };
                 if (lastEdited === 'kva') return { ok: true, kw: shownPowerToKw(raw, dc) * supply.pf };
                 if (lastEdited === 'hp') return { ok: true, kw: (raw * WATTS_PER_HP) / 1000 };
+                if (lastEdited === 'btu') return { ok: true, kw: raw / BTU_PER_KW };
                 if (supply.pf >= 0.999999) return { ok: false, reason: 'kvar-unity' };
                 const tanTheta = Math.sqrt(1 - (supply.pf * supply.pf)) / supply.pf;
                 return { ok: true, kw: Math.abs(raw) / tanTheta };
@@ -2118,6 +2146,35 @@
             });
 
             convert();
+        })();
+
+        (function() {
+            const installBtn = document.getElementById('install-app');
+            let deferredPrompt = null;
+
+            window.addEventListener('beforeinstallprompt', function(event) {
+                event.preventDefault();
+                deferredPrompt = event;
+                installBtn.classList.add('install-ready');
+            });
+
+            installBtn.addEventListener('click', function() {
+                if (!deferredPrompt) return;
+                deferredPrompt.prompt();
+                deferredPrompt.userChoice.finally(function() {
+                    deferredPrompt = null;
+                    installBtn.classList.remove('install-ready');
+                });
+            });
+
+            window.addEventListener('appinstalled', function() {
+                deferredPrompt = null;
+                installBtn.classList.remove('install-ready');
+            });
+
+            if ('serviceWorker' in navigator) {
+                navigator.serviceWorker.register('sw.js').catch(function() {});
+            }
         })();
     </script>
 </body>
